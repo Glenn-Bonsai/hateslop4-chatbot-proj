@@ -97,6 +97,11 @@ class GameState(TypedDict):
     player_name    : str
     player_gender  : str
 
+    current_story  : str        # 현재 루프 스토리 ID (예: "story_A")
+    used_stories   : list[str]  # 이미 진행한 스토리 ID 목록
+    button_history : list[str]  # 현재 루프 버튼 선택 순서 (예: ["A","B","A"])
+    past_sequences : list[list] # 이전 루프들의 버튼 선택 순서 기록
+
 
 # ────────────────────────────────────────────
 # 초기 GameState 생성 헬퍼
@@ -118,14 +123,18 @@ def create_initial_state(
     """
     import copy
     return GameState(
-        loop_count    = 1,
-        phase         = PHASE_BUTTON,
-        npc_stats     = copy.deepcopy(default_npc_stats),
-        stats_locked  = False,
-        messages      = {npc: [] for npc in NPC_LIST},
-        current_npc   = "",
-        clues         = [],
-        is_dead       = False,
-        player_name   = player_name,
-        player_gender = player_gender,
+        loop_count     = 1,
+        phase          = PHASE_BUTTON,
+        npc_stats      = copy.deepcopy(default_npc_stats),
+        stats_locked   = False,
+        messages       = {npc: [] for npc in NPC_LIST},
+        current_npc    = "",
+        clues          = [],
+        is_dead        = False,
+        player_name    = player_name,
+        player_gender  = player_gender,
+        current_story  = "",
+        used_stories   = [],
+        button_history = [],
+        past_sequences = [],
     )
