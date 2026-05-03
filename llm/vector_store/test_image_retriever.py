@@ -4,6 +4,8 @@
 # image_retriever.py의 retrieve_image() 단위 테스트.
 # 실제 Chroma DB와 OpenAI 임베딩을 사용하므로,
 # 반드시 build_image_store()를 먼저 실행한 뒤 테스트할 것.
+from dotenv import load_dotenv
+load_dotenv()
 
 import pytest
 from llm.vector_store.image_retriever import retrieve_image

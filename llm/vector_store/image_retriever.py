@@ -97,6 +97,7 @@ def retrieve_image(response_text: str) -> str | None:
     # ChromaDB cosine distance = 1 - cosine_similarity (값이 작을수록 유사)
     distance = results["distances"][0][0]
     similarity = 1.0 - distance
+    # print(f"[DEBUG] similarity: {similarity}") # 유사도 값을 출력
 
     if similarity >= IMAGE_THRESHOLD:
         return results["metadatas"][0][0]["image_url"]
