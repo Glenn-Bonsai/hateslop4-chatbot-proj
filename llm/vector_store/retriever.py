@@ -65,12 +65,18 @@ def _get_collection() -> chromadb.Collection:
         model_name = EMBEDDING_MODEL,
     )
 
-    _client     = chromadb.PersistentClient(path=CHROMA_PATH)
-    _collection = _client.get_or_create_collection(
-        name               = STORY_COLLECTION,
-        embedding_function = ef,
-        metadata           = {"hnsw:space": "cosine"},
-    )
+    _client = chromadb.PersistentClient(path=CHROMA_PATH)
+    try:
+        _collection = _client.get_collection(
+            name               = STORY_COLLECTION,
+            embedding_function = ef,
+        )
+    except Exception:
+        raise RuntimeError(
+            f"Chroma 컬렉션 '{STORY_COLLECTION}'이 없습니다. "
+            "build_store.py를 먼저 실행해 주세요: "
+            "python -m llm.vector_store.build_store"
+        )
     return _collection
 
 
