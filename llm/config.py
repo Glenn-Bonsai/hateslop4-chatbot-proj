@@ -163,3 +163,15 @@ BUTTON_STORY_MAP: dict[tuple, str] = {
     ("A", "B", "C", "A"): "story_B",
     ("B", "A", "A", "C"): "story_C",
 }
+
+# ── Phase 3: RAG ──────────────────────
+CHROMA_PATH = "./llm/vector_store/db" #Chroma DB가 실제로 저장되는 폴더 경로
+STORY_COLLECTION = "story_chunks" #스토리 문서 청크를 저장하는 컬렉션 이름
+RAG_TOP_K = 3 #유저 발화와 유사한 문서를 몇개까지 가져올 것인가
+
+# ── Phase 4: 이미지 ───────────────────
+IMAGE_COLLECTION = "image_captions"#이미지 캡션을 저장하는 컬렉션 이름
+IMAGE_THRESHOLD = 0.7 #이 점수 미만이면 유사한 이미지 없음.
+
+# ── 공통 ──────────────────────────────
+EMBEDDING_MODEL = "text-embedding-3-small" #phase3,4 모두 사용되는 임베딩 모델
