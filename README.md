@@ -166,6 +166,7 @@ llm/vector_store/
 ├── image_retriever.py   ← 이미지 유사도 검색 함수
 └── data/
     ├── images/          ← 프로듀서 제공 이미지 + 캡션
+    ├── image_captions.json
     └── dummy_responses.py  ← 단위 테스트용 더미 LLM 응답 샘플
 ```
 
