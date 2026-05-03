@@ -18,6 +18,10 @@
 | LLM | Phase 3 (RAG) + chat_node.py 최종 수정 | Phase 4 (이미지 임베딩) |
 | 추가 담당 | Phase 6 (백엔드 API) | Phase 5 (채팅 UI) |
 
+**브랜치 규칙**
+- 엔지니어 A: `RAG`
+- 엔지니어 B: `image`
+
 **chat_node.py 수정 규칙**
 - 엔지니어 A, B 각자 Phase 3/4 작업 중 chat_node.py를 직접 수정하지 않는다.
 - 각자 수정할 내용을 별도 함수/파일로 작성해 전달한다.
@@ -26,6 +30,53 @@
 **병행 가능한 구간**
 - Phase 3/4/5/6 전부 동시 진행 가능
 - Phase 7(통합 테스트)은 3/4/5/6 완료 후 진행
+
+---
+
+## Phase 3/4 동시 진행 합의사항 ✅
+
+### 공통 상수 (config.py 맨 아래에 추가)
+
+```python
+# ── Phase 3: RAG ──────────────────────
+CHROMA_PATH = "./llm/vector_store/db"  # Chroma DB가 실제로 저장되는 폴더 경로
+STORY_COLLECTION = "story_chunks"      # 스토리 문서 청크를 저장하는 컬렉션 이름
+RAG_TOP_K = 3                          # 유저 발화와 유사한 문서를 몇 개까지 가져올지
+
+# ── Phase 4: 이미지 ───────────────────
+IMAGE_COLLECTION = "image_captions"    # 이미지 캡션을 저장하는 컬렉션 이름
+IMAGE_THRESHOLD = 0.7                  # 이 점수 미만이면 유사한 이미지 없음으로 판단 (0~1)
+
+# ── 공통 ──────────────────────────────
+EMBEDDING_MODEL = "text-embedding-3-small"  # Phase 3, 4 둘 다 사용하는 임베딩 모델
+```
+
+### 납품 함수 시그니처
+
+```python
+# retriever.py — Phase 3 (엔지니어 A)
+def retrieve_story_context(user_input: str, loop: int) -> str:
+    # 반환값: 프롬프트에 바로 붙일 수 있는 문자열. 없으면 빈 문자열.
+    pass
+
+# image_retriever.py — Phase 4 (엔지니어 B)
+def retrieve_image(response_text: str) -> str | None:
+    # 반환값: image_url 문자열. 유사도 threshold 미만이면 None.
+    pass
+
+def build_image_store(image_dir: str) -> None:
+    # 이미지 캡션을 임베딩해서 Chroma DB에 저장하는 1회성 함수.
+    pass
+```
+
+### config.py 수정 규칙
+- 엔지니어 A는 `# ── Phase 3: RAG ──` 섹션에만 추가
+- 엔지니어 B는 `# ── Phase 4: 이미지 ──` 섹션에만 추가
+- 공통 상수는 `# ── 공통 ──` 섹션에 추가 (둘이 협의 후)
+
+### 더미 데이터
+- 위치: `llm/vector_store/data/dummy_responses.py`
+- 용도: Phase 4 개발 중 실제 LLM 응답 없이 테스트할 때 사용 (엔지니어 B 전용)
 
 ---
 
@@ -57,7 +108,9 @@
 
 ---
 
-### Phase 3 — RAG 파이프라인 (엔지니어 A)
+### Phase 3 — RAG 파이프라인 (엔지니어 A) 🔄 진행 중
+
+**브랜치**: `RAG`
 
 **프로듀서 제공 자료**
 - [ ] 캐릭터별 배경 스토리 전문 (텍스트)
@@ -89,11 +142,13 @@ llm/vector_store/
 ```
 
 **수정되는 파일 (chat_node.py 제외)**
-- `config.py` — Chroma DB 경로, 검색 결과 개수 등 상수 추가
+- `config.py` — Phase 3 섹션에 상수 추가
 
 ---
 
-### Phase 4 — 이미지 유사도 검색 (엔지니어 B)
+### Phase 4 — 이미지 유사도 검색 (엔지니어 B) 🔄 진행 중
+
+**브랜치**: `image`
 
 **프로듀서 제공 자료**
 - [ ] 게임에서 사용할 이미지 파일 전체
@@ -110,7 +165,8 @@ llm/vector_store/
 llm/vector_store/
 ├── image_retriever.py   ← 이미지 유사도 검색 함수
 └── data/
-    └── images/          ← 프로듀서 제공 이미지 + 캡션
+    ├── images/          ← 프로듀서 제공 이미지 + 캡션
+    └── dummy_responses.py  ← 단위 테스트용 더미 LLM 응답 샘플
 ```
 
 **chat_node.py 수정 내용 (엔지니어 A가 Phase 3 완료 후 반영)**
@@ -122,7 +178,7 @@ llm/vector_store/
 
 **수정되는 파일 (chat_node.py 제외)**
 - `runner.py` — `image_url`을 백엔드로 전달하도록 수정
-- `config.py` — 이미지 유사도 임계값 상수 추가
+- `config.py` — Phase 4 섹션에 상수 추가
 
 ---
 
