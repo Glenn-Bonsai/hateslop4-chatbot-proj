@@ -6,7 +6,6 @@
 import json
 import os
 import uuid
-
 import chromadb
 from openai import OpenAI
 
@@ -52,7 +51,7 @@ def build_image_store(image_dir: str) -> None:
         caption = item["caption"]
         embedding = _get_embedding(caption)
 
-        ids.append(str(uuid.uuid4()))
+        ids.append(item["image_url"])
         embeddings.append(embedding)
         metadatas.append({
             "image_url": item["image_url"],
@@ -60,7 +59,7 @@ def build_image_store(image_dir: str) -> None:
         })
         documents.append(caption)
 
-    collection.add(
+    collection.upsert(
         ids=ids,
         embeddings=embeddings,
         metadatas=metadatas,
