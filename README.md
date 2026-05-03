@@ -191,12 +191,12 @@ llm/vector_store/
 ```
 
 **통합 시 수정되는 파일 (엔지니어 A와 함께)**
-- `chat_node.py` — retrieve_image 연동 (엔지니어 A 담당)
+- `chat_node.py` — retrieve_image 연동
 - `runner.py` — `image_url`을 백엔드로 전달하도록 수정
 
 ---
 
-### Phase 5 — 채팅 인터페이스 (엔지니어 B)
+### Phase 5 — 채팅 인터페이스
 
 **프로듀서 제공 자료**
 - [ ] 채팅 UI 디자인 시안 또는 레퍼런스 이미지
@@ -214,7 +214,7 @@ llm/vector_store/
 
 ---
 
-### Phase 6 — 백엔드 API 서버 (엔지니어 A)
+### Phase 6 — 백엔드 API 서버
 
 **프로듀서 제공 자료**
 - 없음 (엔지니어 자체 설계)
