@@ -34,13 +34,13 @@
 ### Phase 2 — LLM 캐릭터 코어 ✅ 완료 (+ 마무리 작업 필요)
 
 **Phase 2 마무리 작업**
-- [ ] `cha_seoyeon.py`, `umma.py`, `park_dowon.py` 코드 합치기
+- [x] `cha_seoyeon.py`, `umma.py`, `park_dowon.py` 코드 합치기
 - [ ] `chat_node.py` stub 함수 3개 → import로 교체
-- [ ] 프로듀서에게 받은 Few-Shot 샘플 추가 (치키 4개, 김도현 나머지, 차서연/엄마/박도원)
+- [x] 프로듀서에게 받은 Few-Shot 샘플 추가 (치키 4개, 김도현 나머지, 차서연/엄마/박도원)
 - [ ] 프로듀서 확정 후 `config.py` 수정 (수치, 스토리, 버튼 조합, 사망 트리거)
 
 **프로듀서 제공 자료**
-- [ ] 치키 Few-Shot 샘플 나머지 4개
+- [x] 치키 Few-Shot 샘플 나머지 4개
 - [x] 김도현 Few-Shot 샘플 나머지
 - [x] 차서연 Few-Shot 샘플
 - [x] 엄마 Few-Shot 샘플
@@ -217,11 +217,11 @@ openai
 ## 프로듀서 제공 자료 전체 체크리스트
 
 ### Phase 2 관련
-- [ ] 치키 Few-Shot 샘플 나머지 4개
-- [ ] 김도현 Few-Shot 샘플 나머지
-- [ ] 차서연 Few-Shot 샘플
-- [ ] 엄마 Few-Shot 샘플
-- [ ] 박도원 Few-Shot 샘플
+- [x] 치키 Few-Shot 샘플 나머지 4개
+- [x] 김도현 Few-Shot 샘플 나머지
+- [x] 차서연 Few-Shot 샘플
+- [x] 엄마 Few-Shot 샘플
+- [x] 박도원 Few-Shot 샘플
 - [ ] 사망 트리거 단어 목록
 - [ ] 스토리별 버튼 조합
 - [ ] 스토리별 NPC 수치
