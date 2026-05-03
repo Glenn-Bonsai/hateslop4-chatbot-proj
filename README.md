@@ -108,43 +108,71 @@ def build_image_store(image_dir: str) -> None:
 
 ---
 
-### Phase 3 — RAG 파이프라인 🔄 진행 중
+### Phase 3 — RAG 파이프라인 ✅ 완료 (프로듀서 자료 대기 중)
 
-**브랜치**: `RAG`
+**브랜치**: `RAG` → `main` 머지 완료
 
 **프로듀서 제공 자료**
-- [ ] 캐릭터별 배경 스토리 전문 (텍스트)
-- [ ] 게임 세계관 설정 문서 (텍스트)
-- [ ] 사건 일지 및 단서 목록 (텍스트)
+- [ ] 캐릭터별 배경 스토리 전문
+- [ ] 게임 세계관 설정 문서
+- [ ] 사건 일지 및 단서 목록
 - [ ] 루프 회차별 공개 가능 정보 범위
 
 **구현 내용**
-1. 스토리 문서 청킹 — 캐릭터별 배경, 사건 일지, 단서 분리
-2. 임베딩 생성 — 각 청크를 임베딩 벡터로 변환
+1. 프로듀서 제공 `.md` 파일을 읽어 Chroma DB에 저장 (청킹 없음, 파일 1개 = 문서 1개)
+2. OpenAI 임베딩(`text-embedding-3-small`)으로 벡터 변환
 3. Chroma DB 저장 — 루프 회차·공개 레벨 메타데이터 포함
-4. 검색 API 구현 — 유저 발화 → 유사 청크 검색
-5. Phase 2 LLM과 연동 테스트
+4. 검색 API — 유저 발화 + 루프 회차 필터 → 유사 문서 반환
+5. 프롬프트 주입 — 시스템 프롬프트 끝에 RAG 블록 삽입
+6. `chat_node.py` 통합 완료 (RAG + 이미지 동시 반영)
 
-**추가되는 파일**
+**추가된 파일**
 ```
 llm/vector_store/
 ├── build_store.py     ← 벡터 DB 구축 스크립트 (1회성 실행)
 ├── retriever.py       ← 유사 문서 검색 함수
+├── rag_inject.py      ← RAG 결과를 시스템 프롬프트에 주입하는 접착제
 └── data/
-    ├── characters/    ← 캐릭터 배경 문서 (프로듀서 제공)
-    └── world/         ← 세계관 설정 문서 (프로듀서 제공)
+    ├── characters/    ← 캐릭터 배경 문서 (프로듀서 제공, .md)
+    └── world/         ← 세계관 설정 문서 (프로듀서 제공, .md)
 ```
 
-**chat_node.py 수정 내용**
+**파일 네이밍 규칙 (프로듀서 전달 사항)**
+```
+data/characters/{캐릭터명}.md          → 전 루프 공개
+data/characters/{캐릭터명}_loop{N}.md  → 루프 N 이상에서만 검색 노출
+data/world/{파일명}.md                 → 전 루프 공개 세계관 문서
+data/world/{파일명}_loop{N}.md         → 루프 N 이상에서만 검색 노출
+```
+
+**완료 작업**
+- [x] `config.py` Phase 3 섹션 상수 추가 (`CHROMA_PATH` 절대경로로 수정)
+- [x] `build_store.py` 작성 및 테스트 통과
+- [x] `retriever.py` 작성 및 테스트 통과
+- [x] `rag_inject.py` 작성 및 테스트 통과
+- [x] `chat_node.py` RAG 연동 (`get_enriched_system_prompt()` 주입)
+- [x] `chat_node.py` 이미지 연동 (`retrieve_image()` + 반환값 3개로 변경)
+- [x] `chat_node.py` 버그 수정 (`TOTAL_LOOPS` import 경로, 반환 타입 어노테이션)
+
+**프로듀서 자료 수령 후 할 작업**
+- [ ] 실제 `.md` 파일 → `data/characters/`, `data/world/`에 추가
+- [ ] `python -m vector_store.build_store --reset` 으로 DB 재구축
+- [ ] 루프별 문서 공개 범위 확인 후 파일명 `_loop{N}` 적용
+
+**chat_node.py 수정 내용 (완료)**
 ```python
-# generate_npc_response()에 RAG 검색 결과 주입
-# 유저 입력 → 벡터 DB 검색 → 관련 문서 추출 → 프롬프트에 주입
+# generate_npc_response() — RAG 주입
+system_prompt = get_enriched_system_prompt(
+    system_prompt = system_prompt,
+    user_input    = user_input,
+    loop          = state["loop_count"],
+    character     = npc_name,
+)
+
+# chat_node() — 이미지 검색 + 반환값 변경
+image_url = retrieve_image(response)
+return GameState(**updated_state), response, image_url
 ```
-
-**수정되는 파일 (chat_node.py 제외)**
-- `config.py` — Phase 3 섹션에 상수 추가
-
----
 
 ### Phase 4 — 이미지 유사도 검색 ✅ 완료 (프로듀서 자료 대기 중)
 
