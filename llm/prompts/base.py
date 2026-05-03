@@ -231,7 +231,7 @@ def build_system_prompt(
     loop_count      : 현재 루프 회차
     clues           : 유저 보유 단서 목록
     player_name     : 유저 닉네임 (예: "정재희")
-    player_gender   : 유저 성별 ("남자" / "여자" / "무관")
+    player_gender   : 유저 성별 ("남자" / "여자")
     """
     # ── 플레이어 관련 파생 값 계산 ──────────────────
     first_name   = get_first_name(player_name)    # "정재희" → "재희"
