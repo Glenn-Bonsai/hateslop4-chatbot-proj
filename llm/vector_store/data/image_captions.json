@@ -1,0 +1,97 @@
+[
+  {
+    "image_url": "data/images/park_dowon_glass.png",
+    "caption": "박도원이 바닥의 유리 조각을 치우는 장면",
+    "character": "박도원"
+  },
+  {
+    "image_url": "data/images/park_dowon_photo.png",
+    "caption": "박도원이 딸 사진을 꺼내 보여주는 장면",
+    "character": "박도원"
+  },
+  {
+    "image_url": "data/images/park_dowon_delivery.png",
+    "caption": "박도원이 택배 기사로 등장해 서명을 요청하는 장면",
+    "character": "박도원"
+  },
+  {
+    "image_url": "data/images/chiki_happy.png",
+    "caption": "치키가 밝고 귀엽게 웃으며 등장하는 장면",
+    "character": "치키"
+  },
+  {
+    "image_url": "data/images/chiki_lock.png",
+    "caption": "치키가 증거나 기억을 잠그는 장면",
+    "character": "치키"
+  },
+  {
+    "image_url": "data/images/chiki_reveal.png",
+    "caption": "치키가 주인공이 살인마임을 폭로하는 장면",
+    "character": "치키"
+  },
+  {
+    "image_url": "data/images/kim_dohyun_waiting.png",
+    "caption": "김도현이 상담실에서 조용히 기다리는 장면",
+    "character": "김도현"
+  },
+  {
+    "image_url": "data/images/kim_dohyun_angry.png",
+    "caption": "김도현이 분노를 억누르며 주인공을 노려보는 장면",
+    "character": "김도현"
+  },
+  {
+    "image_url": "data/images/kim_dohyun_attack.png",
+    "caption": "김도현이 주인공에게 달려드는 장면",
+    "character": "김도현"
+  },
+  {
+    "image_url": "data/images/cha_seoyeon_coffee.png",
+    "caption": "차서연이 커피를 건네는 장면",
+    "character": "차서연"
+  },
+  {
+    "image_url": "data/images/cha_seoyeon_photo.png",
+    "caption": "차서연이 박주원 사진을 꺼내 보여주는 장면",
+    "character": "차서연"
+  },
+  {
+    "image_url": "data/images/cha_seoyeon_search.png",
+    "caption": "차서연이 주인공의 사무실을 뒤지는 장면",
+    "character": "차서연"
+  },
+  {
+    "image_url": "data/images/umma_table.png",
+    "caption": "엄마가 밥상을 차리며 주인공을 기다리는 장면",
+    "character": "엄마"
+  },
+  {
+    "image_url": "data/images/umma_cry.png",
+    "caption": "엄마가 딸의 기일을 떠올리며 눈물을 흘리는 장면",
+    "character": "엄마"
+  },
+  {
+    "image_url": "data/images/umma_confess.png",
+    "caption": "엄마가 딸의 죽음을 목격했다고 고백하는 장면",
+    "character": "엄마"
+  },
+  {
+    "image_url": "data/images/office_normal.png",
+    "caption": "평온해 보이는 어두운 상담소 내부",
+    "character": "배경"
+  },
+  {
+    "image_url": "data/images/office_safe.png",
+    "caption": "상담소 비밀 금고가 발견되는 장면",
+    "character": "배경"
+  },
+  {
+    "image_url": "data/images/loop_reset.png",
+    "caption": "주인공이 사망하고 루프가 리셋되는 장면",
+    "character": "배경"
+  },
+  {
+    "image_url": "data/images/mirror.png",
+    "caption": "거울 속에 비친 주인공의 모습, 살인마의 정체가 드러나는 장면",
+    "character": "배경"
+  }
+]
