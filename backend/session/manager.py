@@ -11,7 +11,7 @@ import os
 
 # 프로젝트 루트(llm 코드)를 import 경로에 추가
 # backend/ 와 llm/ 코드가 같은 레포 루트에 있다고 가정
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../llm")))
 
 from state import GameState, create_initial_state
 from config import DEFAULT_NPC_STATS

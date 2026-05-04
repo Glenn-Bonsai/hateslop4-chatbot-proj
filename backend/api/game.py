@@ -11,7 +11,8 @@ POST /player-dead        ← 타이머 만료 사망
 
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../llm")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../llm/nodes")))
 
 from fastapi import APIRouter, HTTPException
 
@@ -153,8 +154,8 @@ def new_loop(req: LoopResetRequest):
         raise HTTPException(status_code=404, detail="세션을 찾을 수 없습니다.")
 
     # loop_node에서 리셋 로직 처리
-    from loop_node import loop_node
-    state = loop_node(state)
+    from loop_node import loop_reset_node
+    state = loop_reset_node(state)
     update_state(req.session_id, state)
 
     is_game_over = state["loop_count"] > TOTAL_LOOPS

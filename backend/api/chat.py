@@ -6,7 +6,8 @@ POST /chat  ← NPC와 대화. (GameState, response, image_url) 반환.
 
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../llm")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../llm/nodes")))
 
 from fastapi import APIRouter, HTTPException
 
