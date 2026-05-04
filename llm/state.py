@@ -53,7 +53,7 @@ class GameState(TypedDict):
         키: NPC 이름 (NPC_LIST 참고)
         값: {수치 항목명: 현재 값(0~100)}
         루프 시작 시 config.py의 DEFAULT_NPC_STATS로 초기화.
-        버튼 선택 완료 시 config.py의 STORIES[current_story]로 덮어씀.
+        버튼 선택 완료 시 STORIES[current_story]로 덮어씀.
         예시: {"김도현": {"trust": 20, "hostility": 70}, ...}
 
     stats_locked : bool
@@ -87,7 +87,7 @@ class GameState(TypedDict):
         일부 캐릭터 프롬프트에서 호칭 분기에 사용.
 
     current_story : str
-        현재 루프에서 확정된 스토리 ID (예: "story_A").
+        현재 루프에서 확정된 스토리 ID (예: "story_1").
         button_node.py에서 BUTTON_STORY_MAP 조회 후 설정됨.
         루프 리셋 시 빈 문자열로 초기화.
 
@@ -97,7 +97,20 @@ class GameState(TypedDict):
         (3루프 동안 같은 스토리가 반복되지 않도록 관리)
 
     button_history : list[int]
-        마지막으로 선택한 버튼만 저장.
+        마지막으로 선택한 버튼 ID만 저장 (항상 길이 0 또는 1).
+        버튼 클릭 시 [button_id]로 덮어씀.
+        스토리 확정 시 button_history[0]을 BUTTON_STORY_MAP 조회에 사용.
+        루프 리셋 시 빈 리스트로 초기화.
+
+    first_button : int
+        첫 번째 선택지 버튼 ID. RAG route 필터에 사용.
+        Sheet1 → 100, Sheet2 → 101.
+        루프 리셋 시 0으로 초기화.
+
+    context : list[str]
+        유저가 선택한 버튼 텍스트 누적 목록.
+        프론트에서 조합해서 전달하며, 챗봇 시스템 프롬프트에 오늘의 배경으로 주입.
+        루프 리셋 시 빈 리스트로 초기화.
     """
 
     loop_count     : int
@@ -113,8 +126,9 @@ class GameState(TypedDict):
     player_gender  : str
     current_story  : str
     used_stories   : list   # list[str]
-    button_history : list   # list[int]
-    first_button   : int    # 첫 번째 선택지 버튼 ID (예: "101"). RAG route 필터에 사용.
+    button_history : list   # list[int] — 마지막 버튼 ID 1개만 저장
+    first_button   : int    # 첫 번째 선택지 버튼 ID. RAG route 필터에 사용.
+    context        : list   # list[str] — 프론트에서 조합한 버튼 텍스트 목록
 
 
 # ────────────────────────────────────────────
@@ -152,4 +166,5 @@ def create_initial_state(
         used_stories   = [],
         button_history = [],
         first_button   = 0,
+        context        = [],
     )
