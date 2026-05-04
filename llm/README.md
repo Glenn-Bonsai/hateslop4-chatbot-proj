@@ -1,109 +1,221 @@
-# 🤖 LLM
+# LLM — 죽기 24시간 전에
 
-> 죽기 24시간 전에 — GPT 프롬프트 · RAG 파이프라인 · 이미지 유사도 검색
+> LangGraph 기반 루프형 추리 게임 챗봇 엔진.
+> 버튼 선택(Phase 1) → NPC 대화(Phase 2) → 루프 리셋의 사이클을 3회 반복하며
+> 유저가 범인을 추리하는 게임 흐름을 관리한다.
 
 ---
 
-## 📁 폴더 구조
+## 폴더 구조
 
 ```
-LLM/
+llm/
+├── graph.py              # LangGraph 그래프 조립 (노드 + 엣지 정의)
+├── state.py              # GameState TypedDict 정의, 초기화 헬퍼
+├── config.py             # LLM 모델, NPC 초기 수치, 임계값 등 상수
+├── runner.py             # 백엔드가 호출하는 공개 API 진입점
+├── stories.py            # 스토리별 NPC 확정 수치, 버튼 → 스토리 매핑
+├── death_triggers.py     # 사망 트리거 키워드 감지 로직
+│
+├── nodes/
+│   ├── button_node.py    # Phase 1: 버튼 선택 처리, 스토리 확정
+│   ├── chat_node.py      # Phase 2: NPC 응답 생성, 사망 감지
+│   ├── loop_node.py      # 루프 리셋 처리 (loop_count +1, 상태 초기화)
+│   └── router.py         # LangGraph 조건부 엣지 분기 함수
+│
 ├── prompts/
-│   ├── system_executor.txt         # 시스템 집행자 System Prompt
-│   ├── system_protagonist_m.txt    # 주인공 System Prompt (남)
-│   ├── system_protagonist_f.txt    # 주인공 System Prompt (여)
-│   ├── npc_kim_dohyun.txt          # 김도현 System Prompt
-│   ├── npc_cha_seoyeon.txt         # 차서연 System Prompt
-│   ├── npc_mom.txt                 # 엄마 System Prompt
-│   └── npc_lee_jiwoo.txt           # 이지우 System Prompt
-├── few_shots/
-│   ├── kim_dohyun_examples.json    # 김도현 모범 대화 3~5쌍
-│   ├── cha_seoyeon_examples.json   # 차서연 모범 대화 3~5쌍
-│   ├── mom_examples.json           # 엄마 모범 대화 3~5쌍
-│   └── lee_jiwoo_examples.json     # 이지우 모범 대화 3~5쌍
-├── rag/
-│   ├── chunking.py                 # 스토리 문서 청킹 스크립트
-│   ├── embedding.py                # 청크 임베딩 생성 및 ChromaDB 저장
-│   └── retrieval.py                # 유저 발화 → 유사 청크 검색
-├── image/
-│   ├── caption_embedding.py        # 이미지 캡션 임베딩 생성 및 저장
-│   └── image_search.py             # LLM 응답 → 코사인 유사도 → Top-1 이미지 선택
-├── jailbreak_guard.py              # Jailbreak 방어 로직 (가스라이팅 방어 규칙)
-└── token_manager.py                # 토큰 사용량 관리 · 대화 요약 로직
+│   ├── base.py           # 공통 프롬프트 유틸 (대화 기록 변환, 수치 → 말투 가이드)
+│   ├── executor.py       # 집행자(치키) 시스템 프롬프트 빌더
+│   ├── kim_dohyun.py     # 김도현 시스템 프롬프트 빌더
+│   ├── cha_seoyeon.py    # 차서연 시스템 프롬프트 빌더
+│   ├── umma.py           # 엄마 시스템 프롬프트 빌더
+│   └── park_dowon.py     # 박도원 시스템 프롬프트 빌더
+│
+└── vector_store/
+    ├── build_store.py    # RAG DB 구축 스크립트 (최초 1회 또는 문서 변경 시 실행)
+    ├── retriever.py      # 유저 발화 → Chroma 유사도 검색
+    ├── rag_inject.py     # 검색 결과를 시스템 프롬프트에 삽입
+    ├── image_retriever.py # NPC 응답 → 유사 이미지 URL 검색
+    ├── test_image_retriever.py
+    └── data/
+        ├── characters/   # NPC별 배경 문서 (.md)
+        ├── world/        # 세계관·루프별 사건 문서 (.md)
+        ├── clues/        # 단서 문서 (.md)
+        └── image_captions.json  # 이미지 캡션 데이터
 ```
 
 ---
 
-## 🎮 이 폴더에서 할 작업
+## 게임 흐름
 
-### 1. System Prompt 설계
-- **시스템 집행자** : 유저를 조롱하고 진실에 접근할 때 경고하는 역할의 프롬프트
-- **주인공** : 남/여 선택에 따라 분기되는 프롬프트 (유저가 범인임을 절대 발설 금지 규칙 포함)
-- **주변 인물 4명** : 각 캐릭터 성격 · 비밀 · 말투를 반영한 개별 프롬프트
-- 루프 회차 · 보유 단서를 프롬프트에 **동적으로 주입**하는 구조 구현
-
-> ‼️ 프로듀서에게 캐릭터 배경 스토리 + 대화 샘플을 받은 후 작업
-
-### 2. Few-shot 예시 작성
-- 캐릭터별 모범 대화 3~5쌍 JSON으로 정리
-- GPT 호출 시 messages 배열에 자동 삽입되는 구조로 구현
-
-### 3. Jailbreak 방어 로직
-- 유저가 "너 살인마지?" 등 직접적인 진실 유도 발화 시 집행자가 회피 응답
-- System Prompt에 가스라이팅 방어 규칙을 강하게 명시
-- 방어 실패 케이스 테스트 및 프롬프트 재튜닝
-
-### 4. RAG 파이프라인 구현
-- 스토리 문서를 캐릭터별 배경 · 사건 일지 · 단서로 **청킹**
-- `text-embedding-ada-002`로 임베딩 생성 후 **ChromaDB 저장**
-  - 메타데이터: 루프 회차, 공개 레벨 포함
-- 유저 발화 임베딩 → ChromaDB 검색 → 유사 청크를 프롬프트에 주입
-
-> ‼️ 프로듀서에게 스토리 문서를 받아야 청킹 작업 가능
-
-### 5. 이미지 유사도 검색
-- 프로듀서 제공 이미지에 캡션(설명 텍스트) 작성
-  - GPT-4o 멀티모달 기능으로 자동 캡션 생성 스크립트 활용 가능
-- 캡션 임베딩 생성 후 ChromaDB 저장
-- LLM 응답 문장 임베딩 생성 → 코사인 유사도 계산 → Top-1 이미지 선택
-- 선택된 이미지 URL을 백엔드로 반환
-
-> ‼️ 이미지 자료는 프로듀서에게 수령 후 작업
-
-### 6. 토큰 관리
-- 개발 단계: `gpt-3.5-turbo` 사용
-- 배포/시연 단계: `gpt-4o` 전환
-- 대화 10턴 초과 시 이전 대화를 요약하여 토큰 절약하는 **메모리 요약 로직** 구현
+```
+게임 시작 (new_game)
+     │
+     ▼
+[Phase 1] 버튼 선택 (button_phase)
+  - 유저가 버튼을 클릭할 때마다 select_button() 호출
+  - 마지막 버튼 확정 시 finalize_button_selection() 호출
+  - BUTTON_STORY_MAP으로 스토리 확정 → npc_stats 덮어씀
+     │  stats_locked = True
+     ▼
+[Phase 2] NPC 대화 (chat_phase)
+  - run_chat(state, npc_name, user_input) 호출
+  - 사망 트리거 감지 or 대화 턴 초과 → is_dead = True
+  - RAG 컨텍스트 주입 후 LLM 응답 생성
+  - 이미지 유사도 검색 → image_url 반환
+     │
+     ├─ is_dead = False → 계속 대화 (game_status: "continue")
+     │
+     ├─ is_dead = True, loop_count < 3
+     │    → 루프 리셋 (game_status: "loop_reset")
+     │         loop_count +1, Phase 1로 복귀
+     │
+     └─ is_dead = True, loop_count == 3
+          → 게임 종료 (game_status: "game_over")
+```
 
 ---
 
-## ▶️ 실행 방법
+## 주요 모듈 설명
+
+### `runner.py` — 백엔드 API 진입점
+
+백엔드는 이 파일의 함수만 호출한다. LangGraph 내부 구조를 알 필요 없음.
+
+| 함수 | 역할 |
+|------|------|
+| `new_game(player_name, player_gender)` | 새 게임 시작, 초기 GameState 반환 |
+| `get_available_buttons(state, all_buttons)` | 선택 가능한 버튼 목록 반환 (중복 스토리 방지) |
+| `select_button(state, button)` | 버튼 클릭 처리, 업데이트된 state 반환 |
+| `finalize_button_selection(state)` | 버튼 선택 완료 → Phase 2 전환 |
+| `run_chat(state, npc_name, user_input)` | NPC 응답 생성, `(state, response, image_url, game_status)` 반환 |
+| `set_player_dead(state)` | 타이머 만료 시 사망 처리 |
+| `new_loop(state)` | 루프 리셋 연출 후 다음 루프 state 반환 |
+
+`run_chat` 반환값의 `game_status`:
+- `"continue"` : 정상 대화 진행
+- `"loop_reset"` : 사망 → 루프 리셋 (연출 후 `new_loop()` 호출)
+- `"game_over"` : 3루프 사망 → 게임 종료
+
+---
+
+### `state.py` — GameState
+
+LangGraph 전체 노드가 공유하는 TypedDict. 주요 필드:
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `loop_count` | int | 현재 루프 회차 (1~3) |
+| `phase` | str | `"button"` 또는 `"chat"` |
+| `npc_stats` | dict | NPC별 수치 (trust, hostility, guilt 등) |
+| `stats_locked` | bool | True이면 npc_stats 고정 (Phase 2 진입 후) |
+| `messages` | dict | NPC별 대화 기록 |
+| `current_npc` | str | 현재 대화 중인 NPC 이름 |
+| `is_dead` | bool | 사망 여부 |
+| `current_story` | str | 확정된 스토리 ID |
+| `used_stories` | list | 루프 간 중복 방지용 진행 스토리 목록 |
+| `first_button` | int | 첫 번째 버튼 ID (RAG 필터용: 100=Sheet1, 101=Sheet2) |
+| `context` | list | 선택한 버튼 텍스트 누적 (시스템 프롬프트에 오늘의 배경으로 주입) |
+
+---
+
+### `config.py` — 설정 상수
+
+| 상수 | 기본값 | 설명 |
+|------|--------|------|
+| `LLM_MODEL_DEFAULT` | `gpt-3.5-turbo` | 1~2루프 사용 모델 |
+| `LLM_MODEL_HEAVY` | `gpt-4o` | 마지막 루프 사용 모델 |
+| `LLM_TEMPERATURE` | `0.7` | LLM 온도 |
+| `MAX_CHAT_TURNS` | `20` | NPC별 대화 턴 초과 시 자동 사망 |
+| `SESSION_TIMEOUT` | `960` | 타이머 제한 (초, 프론트 타이머) |
+| `MESSAGE_SUMMARY_THRESHOLD` | `10` | 대화 기록 자동 요약 기준 턴 수 |
+| `RAG_TOP_K` | `3` | RAG 검색 결과 수 |
+| `FLESHY_THRESHOLD` | `67` | 범인 판정 기준 수치 |
+
+---
+
+### `stories.py` — 스토리 수치 & 버튼 매핑
+
+- `STORIES` : 스토리 ID → NPC별 확정 수치 세트 (총 85개 스토리)
+- `BUTTON_STORY_MAP` : 마지막 버튼 ID(int) → 스토리 ID 매핑
+  - 버튼 ID 백의 자리 = 선택 화면 번호 (6xx = Sheet1, 7xx = Sheet2)
+- `Fleshy` 수치가 `FLESHY_THRESHOLD(67)` 이상인 NPC가 범인
+
+수치 수정 시 → `STORIES` 딕셔너리 해당 항목 수정  
+버튼 조합 수정 시 → `BUTTON_STORY_MAP` 수정
+
+---
+
+### NPC 수치 시스템
+
+각 NPC는 수치를 가지며, `config.py`의 `THRESHOLDS`를 기준으로 말투가 분기된다.
+
+| 수치 | 대상 NPC | 설명 |
+|------|----------|------|
+| `trust` | 전체 | 유저 신뢰도 (높을수록 친근) |
+| `hostility` | 김도현 | 적대감 (높을수록 공격적) |
+| `suspicion` | 차서연 | 의심 (높을수록 회피) |
+| `caution` | 차서연 | 경계심 |
+| `guilt` | 엄마 | 죄책감 (높을수록 감정 노출) |
+| `grief` | 박도원 | 슬픔/상실감 |
+| `composure` | 전체 | 감정 억제력 (낮을수록 말실수) |
+| `Fleshy` | 전체 | 범인 판정 수치 (최고값 NPC가 범인) |
+
+---
+
+## RAG 파이프라인
+
+```
+[문서 준비]
+data/characters/{캐릭터명}.md          → 전 루프 공개
+data/characters/{캐릭터명}_loop{N}.md  → 루프 N 이상에서만 검색 노출
+data/world/{파일명}.md                 → 전 루프 공개 세계관
+data/clues/{단서명}_route{ID}.md       → 특정 route(버튼 선택)에서만 노출
+        ↓
+[build_store.py] 문서 청킹 + OpenAI 임베딩 → Chroma DB 저장
+        ↓
+[chat_node.py] 유저 입력 수신
+        ↓
+[retriever.py] 유저 발화 임베딩 → Chroma 유사도 검색
+               (loop_level, route, character 메타데이터 필터 적용)
+        ↓
+[rag_inject.py] 검색 결과를 시스템 프롬프트 끝에 삽입
+        ↓
+[LLM] RAG 컨텍스트가 주입된 프롬프트로 NPC 응답 생성
+```
+
+### DB 구축 실행
 
 ```bash
-# 청킹 및 ChromaDB 저장 (최초 1회 실행)
-python rag/chunking.py
-python rag/embedding.py
+# 최초 구축 또는 문서 변경 시
+python -m llm.vector_store.build_store
 
-# 이미지 캡션 임베딩 저장 (이미지 자료 수령 후)
-python image/caption_embedding.py
-```
-
-> ⚠️ 위 스크립트 실행 전 `.env`에 `OPENAI_API_KEY`가 설정되어 있어야 합니다.
-
----
-
-## 🔐 환경변수 (.env)
-
-```
-OPENAI_API_KEY=xx-xxxxx
+# 기존 DB 삭제 후 재구축
+python -m llm.vector_store.build_store --reset
 ```
 
 ---
 
-## 📌 개발 단계별 GPT 모델
+## 이미지 유사도 검색
 
-| 단계 | 모델 | 비고 |
+`image_captions.json`에 이미지 캡션(설명 텍스트)을 저장해두고,
+NPC 응답 문장과 코사인 유사도를 계산해 가장 유사한 이미지 URL을 반환한다.
+`IMAGE_THRESHOLD(0.7)` 미만이면 None 반환.
+
+---
+
+## 환경변수 (.env)
+
+```
+OPENAI_API_KEY=sk-xxxx
+```
+
+---
+
+## 개발·배포 모델 전략
+
+| 루프 | 모델 | 이유 |
 |------|------|------|
-| 개발 · 테스트 | `gpt-3.5-turbo` | 토큰 비용 절약 |
-| 시연 · 배포 | `gpt-4o` | 최종 품질 |
-| 임베딩 | `text-embedding-ada-002` | 전 단계 공통 |
+| 1~2루프 | `gpt-3.5-turbo` | 토큰 비용 절약 |
+| 3루프 (마지막) | `gpt-4o` | 진실 접근 장면 품질 확보 |
+| 임베딩 | `text-embedding-3-small` | RAG + 이미지 검색 공통 |
