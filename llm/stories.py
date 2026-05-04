@@ -3,7 +3,7 @@
 버튼 조합 → 스토리 매핑을 관리하는 파일.
 
 스토리 수치 수정 시  → STORIES 딕셔너리에서 해당 스토리 키를 찾아 수정
-버튼 조합 수정 시    → BUTTON_STORY_MAP에서 해당 tuple 키를 찾아 수정
+버튼 조합 수정 시    → BUTTON_STORY_MAP에서 해당 마지막 버튼 ID(int)를 찾아 수정
 스토리 추가 시       → STORIES에 항목 추가 후 BUTTON_STORY_MAP에 조합 연결
 """
 
