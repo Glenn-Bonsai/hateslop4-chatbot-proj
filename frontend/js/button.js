@@ -494,8 +494,9 @@ async function onChoice(choice, btn) {
     return;
   }
 
-  // 3) 다음 단계 버튼 렌더링
+  // 3) 다음 단계 씬 표시 + 버튼 렌더링
   GAME_STATE.currentNodeId = String(choice.id);
+  applyScene(choice.id);
   renderChoices(getChildButtons(choice.id));
 }
 
@@ -590,7 +591,7 @@ function setSceneImage(url) {
 // ─────────────────────────────────────────────
 //  씬 전체 업데이트 (외부에서 호출 가능)
 // ─────────────────────────────────────────────
-function updateScene({ imageUrl, speaker, dialogue, choices }) {
+function updateScene({ imageUrl, speaker, dialogue, location, place, choices }) {
   if (imageUrl !== undefined) setSceneImage(imageUrl);
   if (speaker) {
     document.getElementById('speakerName').textContent = speaker.name;
@@ -599,17 +600,54 @@ function updateScene({ imageUrl, speaker, dialogue, choices }) {
   if (dialogue) {
     document.getElementById('dialogueText').innerHTML = dialogue.replace(/\n/g, '<br>');
   }
+  if (location) {
+    document.querySelector('.loc-name').textContent = location;
+  }
+  if (place) {
+    document.querySelector('.loc-place-name .name').textContent = place;
+  }
   if (choices) renderChoices(choices);
+}
+
+// scenes.json 데이터를 화면에 반영하는 헬퍼
+function applyScene(nodeId) {
+  if (!window.SCENE_DATA) return;
+  const scene = window.SCENE_DATA[String(nodeId)];
+  if (!scene) return;
+  updateScene({
+    speaker:  { name: scene.speaker_name, role: scene.speaker_role },
+    dialogue: scene.dialogue,
+    location: scene.location,
+    place:    scene.place,
+  });
 }
 
 // ─────────────────────────────────────────────
 //  초기화
 // ─────────────────────────────────────────────
 (async () => {
-  await startNewGame();                      // session_id 발급 + 비활성화 버튼 조회
-  renderChoices(getChildButtons('root'));    // 선택1 버튼 렌더링 (집에 있는다 / 출근한다)
-  createDrips();                             // 피 방울 장식
+  // 1) scenes.json 로드
+  try {
+    const res = await fetch('data/scenes.json');
+    const data = await res.json();
+    window.SCENE_DATA = data.scenes;
+    console.log('[씬 데이터 로드]', Object.keys(window.SCENE_DATA).length, '개');
+  } catch (e) {
+    console.warn('[scenes.json 로드 실패]', e);
+  }
+
+  // 2) 게임 시작 → session_id 발급
+  await startNewGame();
+
+  // 3) root 씬 표시
+  applyScene('root');
+
+  // 4) 선택1 버튼 렌더링 (집에 있는다 / 출근한다)
+  renderChoices(getChildButtons('root'));
+
+  // 5) 피 방울 장식
+  createDrips();
 })();
 
 // 전역 API
-window.GameUI = { updateScene, renderChoices, setSceneImage };
+window.GameUI = { updateScene, applyScene, renderChoices, setSceneImage };
