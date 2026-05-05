@@ -19,6 +19,8 @@ from fastapi.responses import JSONResponse
 from api.game import router as game_router
 from api.chat import router as chat_router
 
+from api.triggers import router as triggers_router
+app.include_router(triggers_router)
 
 # ────────────────────────────────────────────
 # 앱 생성
