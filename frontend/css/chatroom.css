@@ -166,10 +166,16 @@ html, body {
 .npc-tab-name            { font-size:10px; color:#b0aaa4; font-weight:500; }
 .npc-tab.active .npc-tab-name { color:var(--accent); font-weight:700; }
 
+/* ── 콘텐츠 영역 래퍼 ── */
+#content-area {
+  flex:1; display:flex; flex-direction:column;
+  overflow:hidden; position:relative; z-index:1;
+}
+
 /* ── 채팅 스크롤 ── */
 #chat-scroll {
   flex:1; overflow-y:auto; overflow-x:hidden;
-  padding:10px 0 6px; position:relative; z-index:1;
+  padding:10px 0 6px;
   scroll-behavior:smooth; -webkit-overflow-scrolling:touch;
 }
 #chat-scroll::-webkit-scrollbar       { width:2px; }
@@ -329,11 +335,93 @@ html, body {
   align-items:center; justify-content:center;
   padding:9px 0 7px; gap:3px; border:none; background:none;
   font-family:var(--font-main); cursor:pointer; min-height:44px;
+  position:relative;
 }
 .tab-item svg          { width:20px; height:20px; }
 .tab-item span         { font-size:9px; font-weight:500; }
 .tab-item.active       { color:var(--accent); }
 .tab-item:not(.active) { color:var(--text-dim); }
+
+/* 탭 뱃지 (새 단서 알림) */
+.tab-badge {
+  position:absolute; top:7px; right:calc(50% - 14px);
+  width:6px; height:6px; border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 5px rgba(192,57,43,.8);
+  animation:dotPulse 2s ease-in-out infinite;
+}
+
+/* ── 단서 패널 ── */
+#clue-panel {
+  display:none; flex:1; overflow-y:auto; overflow-x:hidden;
+  background:var(--bg-base);
+  flex-direction:column;
+}
+#clue-panel.active { display:flex; }
+#clue-panel::-webkit-scrollbar       { width:2px; }
+#clue-panel::-webkit-scrollbar-thumb { background:var(--bg-surface3); border-radius:2px; }
+
+.clue-panel-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:13px 14px 10px; border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.clue-panel-title {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px; font-weight:700; color:var(--text-secondary);
+  font-family:var(--font-mono); letter-spacing:.5px; text-transform:uppercase;
+}
+.clue-panel-title svg { width:14px; height:14px; }
+.clue-panel-count {
+  font-size:11px; color:var(--text-dim);
+  font-family:var(--font-mono);
+}
+
+#clue-list { padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+
+/* 빈 상태 */
+.clue-empty {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; padding:48px 20px;
+  color:var(--text-dim);
+}
+.clue-empty-icon { font-size:32px; opacity:.4; }
+.clue-empty-text { font-size:12px; text-align:center; line-height:1.7; color:var(--text-dim); }
+
+/* 단서 아이템 카드 */
+.clue-item {
+  background:var(--bg-surface2);
+  border:1px solid rgba(192,57,43,.14); border-left:2px solid var(--accent);
+  border-radius:var(--radius-sm); padding:10px 12px;
+  display:flex; flex-direction:column; gap:5px;
+  animation:clueIn .3s ease;
+}
+@keyframes clueIn {
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.clue-item-top {
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+}
+.clue-item-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  background:var(--accent); color:#f0e0d8;
+  font-size:7px; font-weight:700; padding:1px 5px; border-radius:1px;
+  font-family:var(--font-mono); letter-spacing:1px; flex-shrink:0;
+}
+.clue-item-time {
+  font-size:9px; color:var(--text-dim); font-family:var(--font-mono);
+}
+.clue-item-body {
+  font-size:13px; line-height:1.6; color:var(--text-primary);
+}
+.clue-item-from {
+  font-size:10px; color:var(--text-secondary);
+  display:flex; align-items:center; gap:4px;
+}
+.clue-item-from::before {
+  content:'🐰'; font-size:10px;
+}
 
 /* ── 치키 토스트 ── */
 #chiki-toast {

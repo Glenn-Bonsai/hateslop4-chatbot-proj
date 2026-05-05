@@ -98,6 +98,8 @@ let loopCount        = 1;
 let responseIdx      = 0;
 let timerInterval    = null;
 let chikiToastTimeout= null;
+let currentTab       = 'chat';  // 'chat' | 'clue'
+let clues            = [];      // 치키가 알려준 단서 목록
 
 // ─────────────────────────────────────────────
 //  타이머
@@ -133,6 +135,79 @@ function updateTimer() {
 function pad(n) { return String(n).padStart(2, '0'); }
 
 timerInterval = setInterval(updateTimer, 1000);
+
+// ─────────────────────────────────────────────
+//  하단 탭 전환
+// ─────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+
+  const chatScroll  = document.getElementById('chat-scroll');
+  const choicesArea = document.getElementById('choices-area');
+  const inputArea   = document.getElementById('input-area');
+  const cluePanel   = document.getElementById('clue-panel');
+  const tabChat     = document.getElementById('tab-chat');
+  const tabClue     = document.getElementById('tab-clue');
+  const badge       = document.getElementById('tab-clue-badge');
+
+  if (tab === 'chat') {
+    chatScroll.style.display  = '';
+    choicesArea.style.display = '';
+    inputArea.style.display   = '';
+    cluePanel.classList.remove('active');
+    tabChat.classList.add('active');
+    tabClue.classList.remove('active');
+  } else {
+    chatScroll.style.display  = 'none';
+    choicesArea.style.display = 'none';
+    inputArea.style.display   = 'none';
+    cluePanel.classList.add('active');
+    tabChat.classList.remove('active');
+    tabClue.classList.add('active');
+    badge.style.display = 'none';
+    renderClues();
+  }
+}
+
+// ─────────────────────────────────────────────
+//  단서 추가 & 렌더링
+// ─────────────────────────────────────────────
+function addClue(msg) {
+  clues.push({ text: msg, time: nowTime() });
+
+  // 단서탭이 닫혀있을 때만 뱃지 표시
+  if (currentTab !== 'clue') {
+    const badge = document.getElementById('tab-clue-badge');
+    badge.style.display = '';
+  }
+  // 단서탭이 열려있으면 즉시 리렌더
+  if (currentTab === 'clue') renderClues();
+}
+
+function renderClues() {
+  const list  = document.getElementById('clue-list');
+  const count = document.getElementById('clue-count');
+  count.textContent = clues.length;
+
+  if (clues.length === 0) {
+    list.innerHTML = `
+      <div class="clue-empty">
+        <div class="clue-empty-icon">🐰</div>
+        <div class="clue-empty-text">치키가 알려준 단서가<br>여기에 기록됩니다.</div>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = clues.map((c, i) => `
+    <div class="clue-item">
+      <div class="clue-item-top">
+        <span class="clue-item-badge">단서 #${String(i + 1).padStart(2, '0')}</span>
+        <span class="clue-item-time">${c.time}</span>
+      </div>
+      <div class="clue-item-body">${esc(c.text)}</div>
+      <div class="clue-item-from">치키의 힌트</div>
+    </div>`).join('');
+}
 
 // ─────────────────────────────────────────────
 //  NPC 전환
@@ -297,6 +372,7 @@ function checkChikiTrigger(text) {
       setTimeout(() => {
         document.getElementById('chiki-bubble-text').textContent = trigger.msg;
         openChiki();
+        addClue(trigger.msg);  // 치키 메시지를 단서로 자동 수집
       }, 1300);
       return;
     }
@@ -379,6 +455,9 @@ function esc(s) {
 document.getElementById('msg-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMsg();
 });
+
+document.getElementById('tab-chat').addEventListener('click', () => switchTab('chat'));
+document.getElementById('tab-clue').addEventListener('click', () => switchTab('clue'));
 
 // ─────────────────────────────────────────────
 //  초기화
