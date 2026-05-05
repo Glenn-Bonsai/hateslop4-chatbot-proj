@@ -265,27 +265,47 @@ llm/vector_store/
 
 ---
 
-### Phase 5 — 채팅 인터페이스
+### Phase 5 — 채팅 인터페이스 ✅ 완료 (채팅 백엔드 연동 제외)
+
+**브랜치**: `buttonroom`, `chatroom` → `main` 머지 완료
 
 **프로듀서 제공 자료**
-- [ ] 채팅 UI 디자인 시안 또는 레퍼런스 이미지
-- [ ] 사망 연출 화면 디자인 (Loop Reset 화면)
+- [x] 채팅 UI 디자인 시안 또는 레퍼런스 이미지 (자체 디자인으로 구현)
+- [x] 사망 연출 화면 디자인 (Loop Reset 화면) (자체 구현)
 - [ ] NPC별 프로필 이미지
 
-**구현 내용**
-- 버튼 선택 화면 (선택1~7, disabled 처리 포함)
-- 채팅창 (유저 / NPC 말풍선 구분)
-- 텍스트 입력창 + 전송 버튼
-- 타이머 표시 (16분 카운트다운, Phase 2 진입 시점부터 시작)
-- NPC 전환 UI (김도현 / 차서연 / 엄마 / 박도원)
-- 이미지 렌더링 (백엔드에서 image_url 수신 시 말풍선 안에 표시)
-- 사망 연출 화면 (Loop Reset 문구 + 붉은 효과)
-- 백엔드 API 연동
+**구현 완료 작업**
+- [x] 버튼 선택 화면 (`buttonroom.html` + `js/button.js`) — 전체 7단계 트리 구현
+- [x] 버튼 disabled 처리 (백엔드 `/available-buttons` 연동)
+- [x] 백엔드 API 연동 — 버튼 화면 (`/new-game`, `/record-button`, `/finalize`, `/available-buttons`)
+- [x] 오프라인 모드 지원 (백엔드 미연결 시 프론트 단독 실행)
+- [x] 채팅창 (`chatroom.html` + `js/chat.js`) — 유저 / NPC 말풍선 구분
+- [x] 텍스트 입력창 + 전송 버튼
+- [x] 타이머 표시 (47분 12초 카운트다운)
+- [x] NPC 전환 UI (김도현 / 차서연 / 엄마 / 박도원)
+- [x] 사망 연출 화면 (Loop Reset 문구 + 붉은 효과)
+- [x] 치키 트리거 시스템 (CHIKI_TRIGGERS 5종) + 드로어
+- [x] 단서 수집 탭 (clue 패널, 중복 방지 포함)
+- [ ] 채팅 백엔드 API 연동 (`/chat`, `/player-dead`, `/new-loop`) — 현재 더미 응답 사용
+- [ ] 이미지 렌더링 (백엔드 `image_url` 수신 후 말풍선 표시) — 채팅 백엔드 연동 후 구현 예정
+
+**추가된 파일**
+```
+frontend/
+├── buttonroom.html        ← 버튼 선택 화면 (7단계)
+├── chatroom.html          ← 채팅 화면
+├── css/
+│   ├── buttonroom.css
+│   └── chatroom.css
+└── js/
+    ├── button.js          ← 버튼 트리 탐색 + 백엔드 연동
+    └── chat.js            ← NPC 전환 / 타이머 / 치키 트리거 / 사망 연출
+```
 
 **버튼 관련 구현 사항**
-- 버튼 정의: 프론트에서 `BUTTON_STEPS` 딕셔너리로 관리 (id + text)
-- 버튼 클릭 시: `last_button_id`와 `context`(텍스트 누적) 백엔드로 전송
-- `disabled_button_ids` 수신 시 해당 버튼 비활성화 처리
+- 버튼 정의: `BUTTON_TREE` 딕셔너리로 전체 트리 관리 (id + text)
+- 버튼 클릭 시: `last_button_id`와 `contextHistory`(텍스트 누적) 백엔드로 전송
+- `disabled_button_ids` 수신 시 해당 버튼 비활성화 처리 ✅
 
 ---
 
@@ -494,6 +514,6 @@ pytest
 - [ ] 이미지별 사용 상황/장면 설명
 
 ### Phase 5 관련
-- [ ] 채팅 UI 디자인 시안
-- [ ] 사망 연출 화면 디자인
+- [x] 채팅 UI 디자인 시안 (자체 디자인으로 구현)
+- [x] 사망 연출 화면 디자인 (자체 구현)
 - [ ] NPC별 프로필 이미지
