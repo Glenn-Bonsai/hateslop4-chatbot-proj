@@ -1,48 +1,413 @@
 // ═══════════════════════════════════════════════
 //  button.js  —  Phase 1 버튼 선택 UI 동작 로직
-//  담당: 게임 상태 / 타이머 / 선택지 렌더링 /
-//        버튼 클릭 처리 / 씬 업데이트 / 피 방울 생성
+//  담당: 게임 상태 / 타이머 / 버튼 트리 탐색 /
+//        선택지 렌더링 / 백엔드 연동 / 씬 업데이트
 // ═══════════════════════════════════════════════
 
 // ─────────────────────────────────────────────
 //  게임 상태
 // ─────────────────────────────────────────────
 const GAME_STATE = {
-  timer:     { h:0, m:47, s:12 },
-  clues:     { cur:2, total:7 },
-  heartRate: 72,
-  trust:     28,
+  timer:          { h:0, m:24, s:0 },  // 24분 제한
+  currentNodeId:  'root',              // 현재 위치한 트리 노드
+  buttonHistory:  [],                  // 클릭한 버튼 ID 누적 → 백엔드 전달용
+  contextHistory: [],                  // 클릭한 버튼 텍스트 누적 → 챗봇 맥락용
+  lastButtonId:   null,                // 가장 마지막 선택 ID
+  disabledIds:    [],                  // 백엔드에서 수신한 비활성화 버튼 ID 목록
+  sessionId:      null,                // POST /new-game 에서 수신
 };
 
 // ─────────────────────────────────────────────
-//  선택지 데이터
-//  TODO: 백엔드 연동 시 GET /available-buttons 로 교체
-//        disabled 여부는 disabled_button_ids 수신 후 적용
+//  버튼 트리
+//  구조: { 부모ID(string): { 자식ID(string): "버튼텍스트" } }
+//  'root' = 게임 시작점 (선택1)
+//  리프 노드 = 자식이 없는 노드 → 7단계 완료 신호
 // ─────────────────────────────────────────────
-const CHOICES = [
-  { id:600, iconType:'door',  text:'문을 연다',   trustDelta:-5, disabled:false },
-  { id:601, iconType:'lock',  text:'문을 잠근다', trustDelta:+5, disabled:false },
-];
-
-// ─────────────────────────────────────────────
-//  아이콘 SVG 맵
-// ─────────────────────────────────────────────
-const ICONS = {
-  door:
-    `<svg viewBox="0 0 24 24"><rect x="3" y="2" width="14" height="20" rx="1"/>
-     <path d="M17 9l4 3-4 3"/>
-     <circle cx="14.5" cy="12" r=".8" fill="rgba(0,200,170,0.85)" stroke="none"/></svg>`,
-  question:
-    `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/>
-     <path d="M12 8a2 2 0 011.886 2.667C13.5 11.5 12 12 12 13"/>
-     <circle cx="12" cy="16.5" r=".8" fill="rgba(0,200,170,0.85)" stroke="none"/></svg>`,
-  lock:
-    `<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/>
-     <path d="M8 11V7a4 4 0 018 0v4"/></svg>`,
+const BUTTON_TREE = {
+  "root": {
+    "100": "집에 있는다",
+    "101": "출근한다"
+  },
+  // ── Sheet1: 100 (집에 있는다) 루트 ──
+  "100": {
+    "200": "나가지 않고 '택배 두고가세요' 말만 한다",
+    "201": "나가서 택배를 받는다"
+  },
+  "200": {
+    "300": "출근을 한다",
+    "301": "핑계를 대며 출근을 안 하고 밥을 마저 먹는다"
+  },
+  "201": {
+    "302": "자신을 아냐고 직접 물어본다",
+    "303": "애써 웃으며 싸인만 한다"
+  },
+  "300": {
+    "400": "차서연에게 사무실이 왜 어질러져 있는지 물어본다",
+    "401": "물어보지 않는다"
+  },
+  "301": {
+    "402": "나한테 동생이 있었어? 라며 물어본다",
+    "403": "엄마의 말을 무시한다"
+  },
+  "302": {
+    "404": "USB 파일을 열어본다",
+    "405": "USB 파일을 열어보지 않고 밥을 먹으러 간다"
+  },
+  "303": {
+    "406": "나한테 동생이 있었어? 라며 물어본다",
+    "407": "엄마의 말을 무시한다"
+  },
+  "400": {
+    "500": "차서연이 전달한 인스타를 확인한다",
+    "501": "확인하지 않는다. 내담자와의 윤리를 지켜야한다"
+  },
+  "401": {
+    "502": "차서연이 전달한 인스타를 확인한다",
+    "503": "확인하지 않는다. 내담자와의 윤리를 지켜야한다"
+  },
+  "402": {
+    "504": "엄마에게 어릴 때의 자신에 대해 물어본다",
+    "505": "엄마에게 어릴 때의 자신에 대해 묻지 않는다"
+  },
+  "403": {
+    "506": "엄마에게 어릴 때의 자신에 대해 물어본다",
+    "507": "엄마에게 어릴 때의 자신에 대해 묻지 않는다"
+  },
+  "404": {
+    "508": "발신자 표시 제한 전화를 받는다",
+    "509": "전화를 받지 않는다"
+  },
+  "405": {
+    "510": "아무 일도 없었다고 잘 지낸다고 말한다",
+    "511": "요즘 살인현장에 관한 꿈을 꾼다고 말한다"
+  },
+  "406": {
+    "512": "엄마에게 어릴 때의 자신에 대해 물어본다",
+    "513": "엄마에게 어릴 때의 자신에 대해 묻지 않는다"
+  },
+  "407": {
+    "514": "엄마에게 어릴 때의 자신에 대해 물어본다",
+    "515": "엄마에게 어릴 때의 자신에 대해 묻지 않는다"
+  },
+  "500": {
+    "600": "김하윤이 누군데 이러세요? 김도현을 진정시키고 대화를 시작한다",
+    "601": "차서연씨!! 도와주세요. 함께 김도현을 내쫓는다"
+  },
+  "501": {
+    "602": "김하윤이 누군데 이러세요? 김도현을 진정시키고 대화를 시작한다",
+    "603": "차서연씨!! 도와주세요. 함께 김도현을 내쫓는다"
+  },
+  "502": {
+    "604": "김하윤이 누군데 이러세요? 김도현을 진정시키고 대화를 시작한다",
+    "605": "차서연씨!! 도와주세요. 함께 김도현을 내쫓는다"
+  },
+  "503": {
+    "606": "김하윤이 누군데 이러세요? 김도현을 진정시키고 대화를 시작한다",
+    "607": "차서연씨!! 도와주세요. 함께 김도현을 내쫓는다"
+  },
+  "504": {
+    "608": "카톡에 오늘 근무가 어려울 것 같다고 답한다",
+    "609": "카톡에 답하지 않는다"
+  },
+  "505": {
+    "610": "카톡에 오늘 근무가 어려울 것 같다고 답한다",
+    "611": "카톡에 답하지 않는다"
+  },
+  "506": {
+    "612": "카톡에 오늘 근무가 어려울 것 같다고 답한다",
+    "613": "카톡에 답하지 않는다"
+  },
+  "507": {
+    "614": "카톡에 오늘 근무가 어려울 것 같다고 답한다",
+    "615": "카톡에 답하지 않는다"
+  },
+  "508": {
+    "616": "내담자가 자신에게 달려드는 듯한 사진을 받았다고 이야기한다",
+    "617": "이상한 일 없으며 잘 지내고 있다고 말한다"
+  },
+  "509": {
+    "618": "내담자가 자신에게 달려드는 듯한 사진을 받았다고 이야기한다",
+    "619": "이상한 일 없으며 잘 지내고 있다고 말한다"
+  },
+  "510": {
+    "620": "엄마에게 주원에 대해 물어본다",
+    "621": "엄마에게 주원에 대해 물어보지 않는다"
+  },
+  "512": {
+    "622": "카톡에 오늘 근무가 어려울 것 같다고 답한다",
+    "623": "창문 쪽으로 가본다"
+  },
+  "513": {
+    "624": "카톡에 오늘 근무가 어려울 것 같다고 답한다",
+    "625": "창문 쪽으로 가본다"
+  },
+  "514": {
+    "626": "카톡에 오늘 근무가 어려울 것 같다고 답한다",
+    "627": "창문 쪽으로 가본다"
+  },
+  "515": {
+    "628": "카톡에 오늘 근무가 어려울 것 같다고 답한다",
+    "629": "창문 쪽으로 가본다"
+  },
+  "601": {
+    "700": "차서연에게 김하윤에 대해 묻는다",
+    "701": "차서연에게 김하윤에 대해 묻지 않는다"
+  },
+  "603": {
+    "702": "차서연에게 김하윤에 대해 묻는다",
+    "703": "차서연에게 김하윤에 대해 묻지 않는다"
+  },
+  "605": {
+    "704": "차서연에게 김하윤에 대해 묻는다",
+    "705": "차서연에게 김하윤에 대해 묻지 않는다"
+  },
+  "607": {
+    "706": "차서연에게 김하윤에 대해 묻는다",
+    "707": "차서연에게 김하윤에 대해 묻지 않는다"
+  },
+  "616": {
+    "708": "엄마에게 전에 김도현에 대해 어떻게 이야기 했었는지 말해달라 한다",
+    "709": "황급히 엄마한테 내일 무엇을 하는지 물어본다"
+  },
+  "617": {
+    "710": "엄마에게 전에 김도현에 대해 어떻게 이야기 했었는지 말해달라 한다",
+    "711": "황급히 엄마한테 내일 무엇을 하는지 물어본다"
+  },
+  "618": {
+    "712": "엄마에게 전에 김도현에 대해 어떻게 이야기 했었는지 말해달라 한다",
+    "713": "황급히 엄마한테 내일 무엇을 하는지 물어본다"
+  },
+  "619": {
+    "714": "엄마에게 전에 김도현에 대해 어떻게 이야기 했었는지 말해달라 한다",
+    "715": "황급히 엄마한테 내일 무엇을 하는지 물어본다"
+  },
+  "623": {
+    "716": "쫓아간다",
+    "717": "쫓아가지 않고 돌아가 엄마랑 마저 밥을 먹는다"
+  },
+  "625": {
+    "718": "쫓아간다",
+    "719": "쫓아가지 않고 돌아가 엄마랑 마저 밥을 먹는다"
+  },
+  "627": {
+    "720": "쫓아간다",
+    "721": "쫓아가지 않고 돌아가 엄마랑 마저 밥을 먹는다"
+  },
+  "629": {
+    "722": "쫓아간다",
+    "723": "쫓아가지 않고 돌아가 엄마랑 마저 밥을 먹는다"
+  },
+  // ── Sheet2: 101 (출근한다) 루트 ──
+  "101": {
+    "202": "커피를 마신다",
+    "203": "거절한다"
+  },
+  "202": {
+    "304": "인스타를 확인한다",
+    "305": "확인하지 않는다. 내담자와의 윤리를 지켜야 함"
+  },
+  "203": {
+    "306": "사무실로 이동한다",
+    "307": "거절한다"
+  },
+  "304": {
+    "408": "김하윤이 누군데 이러세요? 김도현과 대치한다",
+    "409": "차서연씨!! 도와주세요. 함께 김도현을 내쫓는다"
+  },
+  "305": {
+    "410": "김하윤이 누군데 이러세요? 김도현과 대치한다",
+    "411": "차서연씨!! 도와주세요. 함께 김도현을 내쫓는다"
+  },
+  "306": {
+    "412": "차서연에게 말을 건다",
+    "413": "무시하고 김도현과 대화한다"
+  },
+  "307": {
+    "414": "그 사람이 누군데 이러세요!!",
+    "415": "제가 무슨 사람을 죽여요!!!!"
+  },
+  "408": {
+    "516": "처음 듣는 일이에요",
+    "517": "아.. 맞아요.. 정말 안타깝네요.."
+  },
+  "409": {
+    "518": "차서연에게 김하윤에 대해 묻는다",
+    "519": "물어보지 않는다"
+  },
+  "410": {
+    "520": "처음 듣는 일이에요",
+    "521": "아.. 전애인분까지.. 정말 안타깝네요.."
+  },
+  "411": {
+    "522": "차서연에게 김하윤에 대해 묻는다",
+    "523": "물어보지 않는다"
+  },
+  "412": {
+    "524": "뭐 찾고 있었던 거 아니냐고 물어본다",
+    "525": "믿어준다"
+  },
+  "413": {
+    "526": "무엇을 찾는지 물어본다",
+    "527": "별 반응 없이 지켜본다"
+  },
+  "414": {
+    "528": "김도현에게 공격적으로 대응, 내쫓는다",
+    "529": "김도현을 진정시킨다. 자발적으로 나간다"
+  },
+  "415": {
+    "530": "김도현에게 공격적으로 대응, 내쫓는다",
+    "531": "김도현을 진정시킨다. 자발적으로 나간다"
+  },
+  "516": {
+    "630": "몰러유",
+    "631": "기억 나는 것 같기도 하구요.. 뉴스에서 봤었나?"
+  },
+  "517": {
+    "632": "몰러유",
+    "633": "기억 나는 것 같기도 하구요.. 뉴스에서 봤었나?"
+  },
+  "518": {
+    "634": "인스타를 확인한다",
+    "635": "확인하지 않는다"
+  },
+  "519": {
+    "636": "몰러유",
+    "637": "기억 나는 것 같기도 하구요.. 뉴스에서 봤었나?"
+  },
+  "520": {
+    "638": "몰러유",
+    "639": "기억 나는 것 같기도 하구요.. 뉴스에서 봤었나?"
+  },
+  "521": {
+    "640": "몰러유",
+    "641": "기억 나는 것 같기도 하구요.. 뉴스에서 봤었나?"
+  },
+  "522": {
+    "642": "인스타를 확인한다",
+    "643": "확인하지 않는다"
+  },
+  "523": {
+    "644": "몰러유",
+    "645": "기억 나는 것 같기도 하구요.. 뉴스에서 봤었나?"
+  },
+  "524": {
+    "646": "거절한다",
+    "647": "승인한다"
+  },
+  "525": {
+    "648": "거절한다",
+    "649": "승인한다"
+  },
+  "526": {
+    "650": "거절한다",
+    "651": "승인한다"
+  },
+  "527": {
+    "652": "거절한다",
+    "653": "승인한다"
+  },
+  "528": {
+    "654": "무시한다",
+    "655": "사과를 한다"
+  },
+  "529": {
+    "656": "차서연에게 말을 건다",
+    "657": "박도원에게 말을 건다"
+  },
+  "530": {
+    "658": "무시한다",
+    "659": "사과를 한다"
+  },
+  "531": {
+    "660": "차서연에게 말을 건다",
+    "661": "박도원에게 말을 건다"
+  },
+  "630": { "724": "머리가 복잡하다. 바람도 쐴 겸 병원 1층으로 가본다" },
+  "631": { "725": "머리가 복잡하다. 바람도 쐴 겸 병원 1층으로 가본다" },
+  "632": { "726": "네" },
+  "633": { "727": "아니요" },
+  "634": { "728": "네" },
+  "635": { "729": "아니요" },
+  "636": { "730": "머리가 복잡하다. 바람도 쐴 겸 병원 1층으로 가본다" },
+  "637": { "731": "머리가 복잡하다. 바람도 쐴 겸 병원 1층으로 가본다" },
+  "638": { "732": "머리가 복잡하다. 바람도 쐴 겸 병원 1층으로 가본다" },
+  "639": { "733": "머리가 복잡하다. 바람도 쐴 겸 병원 1층으로 가본다" },
+  "640": { "734": "차서연에게 김하윤에 대해 묻지 않는다" },
+  "641": { "735": "네" },
+  "642": { "736": "네" },
+  "643": { "737": "아니요" },
+  "644": { "738": "머리가 복잡하다. 바람도 쐴 겸 병원 1층으로 가본다" },
+  "645": { "739": "머리가 복잡하다. 바람도 쐴 겸 병원 1층으로 가본다" },
+  "646": { "740": "USB 파일을 열어본다" },
+  "647": {
+    "741": "모르겠어요",
+    "742": "본 거 같기도 한데 기억이 잘 안 나네요"
+  },
+  "648": { "743": "USB 파일을 열어본다" },
+  "649": {
+    "744": "모르겠어요",
+    "745": "본 거 같기도 한데 기억이 잘 안 나네요"
+  },
+  "650": { "746": "USB 파일을 열어본다" },
+  "651": {
+    "747": "모르겠어요",
+    "748": "본 거 같기도 한데 기억이 잘 안 나네요"
+  },
+  "652": { "749": "USB 파일을 열어본다" },
+  "653": {
+    "750": "모르겠어요",
+    "751": "본 거 같기도 한데 기억이 잘 안 나네요"
+  },
+  "654": {
+    "752": "박도원과 대화한다",
+    "753": "사무실에 들어간다"
+  },
+  "655": {
+    "754": "박도원과 대화한다",
+    "755": "사무실에 들어간다"
+  },
+  "656": { "756": "몰러유" },
+  "657": {
+    "757": "그런가요? 흉흉한지 몰랐어요",
+    "758": "에이 그래도 다 없어지는 건 너무 나쁜 생각 아닐까요~"
+  },
+  "658": {
+    "759": "박도원과 대화한다",
+    "760": "사무실에 들어간다"
+  },
+  "659": {
+    "761": "박도원과 대화한다",
+    "762": "사무실에 들어간다"
+  },
+  "660": { "763": "몰러유" },
+  "661": {
+    "764": "그런가요? 흉흉한지 몰랐어요",
+    "765": "에이 그래도 다 없어지는 건 너무 나쁜 생각 아닐까요~"
+  },
 };
 
 // ─────────────────────────────────────────────
-//  피 방울 생성
+//  트리 탐색 헬퍼
+// ─────────────────────────────────────────────
+
+// 리프 노드 여부 (자식 없음 = 7단계 완료)
+function isLeafNode(nodeId) {
+  return !BUTTON_TREE[String(nodeId)];
+}
+
+// 현재 노드의 자식 버튼 배열 반환 (disabled 적용 포함)
+function getChildButtons(nodeId) {
+  const children = BUTTON_TREE[String(nodeId)];
+  if (!children) return [];
+  return Object.entries(children).map(([id, text]) => ({
+    id:       Number(id),
+    text,
+    disabled: GAME_STATE.disabledIds.includes(Number(id)),
+  }));
+}
+
+// ─────────────────────────────────────────────
+//  피 방울 장식 생성
 // ─────────────────────────────────────────────
 function createDrips() {
   const container = document.getElementById('dripContainer');
@@ -66,7 +431,7 @@ function createDrips() {
 }
 
 // ─────────────────────────────────────────────
-//  타이머
+//  타이머 (24분)
 // ─────────────────────────────────────────────
 const timerEl = document.getElementById('timerDisplay');
 let total = GAME_STATE.timer.h * 3600 + GAME_STATE.timer.m * 60 + GAME_STATE.timer.s;
@@ -90,7 +455,6 @@ setInterval(() => {
 function renderChoices(choices) {
   const sec = document.getElementById('choicesSection');
   sec.innerHTML = '';
-
   choices.forEach(c => {
     const btn = document.createElement('button');
     btn.className = 'choice-btn' + (c.disabled ? ' disabled' : '');
@@ -104,7 +468,7 @@ function renderChoices(choices) {
 // ─────────────────────────────────────────────
 //  버튼 클릭 처리
 // ─────────────────────────────────────────────
-function onChoice(choice, btn) {
+async function onChoice(choice, btn) {
   // 선택 하이라이트
   document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -114,14 +478,101 @@ function onChoice(choice, btn) {
   fl.classList.add('on');
   setTimeout(() => fl.classList.remove('on'), 140);
 
-  // 상태 업데이트
-  GAME_STATE.trust     = Math.max(0, Math.min(100, GAME_STATE.trust + choice.trustDelta));
-  GAME_STATE.heartRate = Math.min(130, GAME_STATE.heartRate + Math.abs(choice.trustDelta) * 2);
+  // 히스토리 누적
+  GAME_STATE.buttonHistory.push(choice.id);
+  GAME_STATE.contextHistory.push(choice.text);
+  GAME_STATE.lastButtonId = choice.id;
 
   console.log('[선택]', choice.id, choice.text);
 
-  // ── FUTURE: 백엔드 연동 시 아래로 교체 ──────────
-  // sendChoiceToBackend(choice);
+  // 1) 백엔드에 버튼 클릭 기록
+  await recordButton(choice.id);
+
+  // 2) 리프 노드 = 7단계 완료 → finalize 후 chatroom 이동
+  if (isLeafNode(choice.id)) {
+    await finalizeAndNavigate();
+    return;
+  }
+
+  // 3) 다음 단계 버튼 렌더링
+  GAME_STATE.currentNodeId = String(choice.id);
+  renderChoices(getChildButtons(choice.id));
+}
+
+// ─────────────────────────────────────────────
+//  백엔드 API 호출
+// ─────────────────────────────────────────────
+
+// 게임 시작 → session_id 발급
+async function startNewGame() {
+  try {
+    const res = await fetch('/new-game', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ player_name: '플레이어', player_gender: '미설정' }),
+    });
+    const data = await res.json();
+    GAME_STATE.sessionId = data.session_id;
+    sessionStorage.setItem('session_id', data.session_id);
+    console.log('[새 게임] session_id:', data.session_id);
+
+    // 비활성화 버튼 목록 초기 조회 (루프 중복 방지)
+    await fetchDisabledButtons();
+  } catch (e) {
+    console.warn('[백엔드 미연결] 오프라인 모드로 실행합니다.', e);
+  }
+}
+
+// 비활성화 버튼 목록 조회
+async function fetchDisabledButtons() {
+  try {
+    const session_id = GAME_STATE.sessionId || sessionStorage.getItem('session_id');
+    if (!session_id) return;
+    const res  = await fetch(`/available-buttons?session_id=${session_id}`);
+    const data = await res.json();
+    GAME_STATE.disabledIds = data.disabled_button_ids || [];
+    console.log('[비활성화 버튼]', GAME_STATE.disabledIds);
+  } catch (e) {
+    console.warn('[fetchDisabledButtons 실패]', e);
+  }
+}
+
+// 버튼 클릭 기록 (매 선택마다)
+async function recordButton(buttonId) {
+  try {
+    const session_id = GAME_STATE.sessionId || sessionStorage.getItem('session_id');
+    if (!session_id) return;
+    await fetch('/record-button', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ session_id, last_button_id: buttonId }),
+    });
+  } catch (e) {
+    console.warn('[recordButton 실패]', e);
+  }
+}
+
+// 7단계 완료 → story 확정 → chatroom.html 이동
+async function finalizeAndNavigate() {
+  try {
+    const session_id = GAME_STATE.sessionId || sessionStorage.getItem('session_id');
+    const res  = await fetch('/finalize', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        session_id,
+        last_button_id: GAME_STATE.lastButtonId,
+        context:        GAME_STATE.contextHistory,
+      }),
+    });
+    const data = await res.json();
+    console.log('[finalize]', data);
+    sessionStorage.setItem('session_id', session_id);
+  } catch (e) {
+    console.warn('[finalizeAndNavigate 실패]', e);
+  } finally {
+    window.location.href = 'chatroom.html';
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -137,7 +588,7 @@ function setSceneImage(url) {
 }
 
 // ─────────────────────────────────────────────
-//  씬 전체 업데이트 (백엔드 응답 수신 시 호출)
+//  씬 전체 업데이트 (외부에서 호출 가능)
 // ─────────────────────────────────────────────
 function updateScene({ imageUrl, speaker, dialogue, choices }) {
   if (imageUrl !== undefined) setSceneImage(imageUrl);
@@ -154,39 +605,11 @@ function updateScene({ imageUrl, speaker, dialogue, choices }) {
 // ─────────────────────────────────────────────
 //  초기화
 // ─────────────────────────────────────────────
-renderChoices(CHOICES);
-createDrips();
+(async () => {
+  await startNewGame();                      // session_id 발급 + 비활성화 버튼 조회
+  renderChoices(getChildButtons('root'));    // 선택1 버튼 렌더링 (집에 있는다 / 출근한다)
+  createDrips();                             // 피 방울 장식
+})();
 
-// 전역 API — 백엔드 연동 시 updateScene() 호출
+// 전역 API
 window.GameUI = { updateScene, renderChoices, setSceneImage };
-
-// ── FUTURE BACKEND INTEGRATION ───────────────────────────
-// async function sendChoiceToBackend(choice) {
-//   const session_id = sessionStorage.getItem('session_id');
-//   const res = await fetch('/finalize', {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({
-//       session_id,
-//       last_button_id: choice.id,
-//       context: [choice.text],
-//     })
-//   });
-//   const data = await res.json();
-//   // data.disabled_button_ids → 비활성화할 버튼 ID 목록
-//   // data.session_id          → chatroom.html 이동 시 사용
-//   applyDisabledButtons(data.disabled_button_ids);
-// }
-//
-// function applyDisabledButtons(ids = []) {
-//   document.querySelectorAll('.choice-btn').forEach(btn => {
-//     if (ids.includes(Number(btn.dataset.id))) {
-//       btn.classList.add('disabled');
-//       btn.style.pointerEvents = 'none';
-//     }
-//   });
-// }
-//
-// 마지막 버튼 선택 완료 후 chatroom으로 이동:
-// sessionStorage.setItem('session_id', data.session_id);
-// window.location.href = 'chatroom.html';
