@@ -13,7 +13,6 @@ const NPCs = [
     id:0, name:'김도현', sub:'34세 · 남성', tag:'내담자',
     tagColor:'#6a7f99', avatarStyle:'color:#6a7f99;',
     statLabel:'경계심', statVal:72, statColor:'#c0392b',
-    // TODO: 백엔드 연동 시 GET /available-buttons 로 교체
     choices:['그 이름을 왜 묻습니까?','이틀 전 일이요?','기억하고 있습니다','왜 화났어요?'],
     responses:[
       '선생님은 정말 기억이 안 나십니까?',
@@ -57,74 +56,94 @@ const NPCs = [
 ];
 
 // ─────────────────────────────────────────────
-//  치키 트리거 단어 & 대사
-//  TODO: 백엔드에서 트리거 목록 받아오는 경우 GET /chiki-triggers 로 교체
+//  트리거 데이터
+//  GET /chiki-triggers  — 서버에서 loop별로 받아옴
+//  GET /clue-triggers   — NPC 발화 감지용
+//
+//  백엔드 미연결 시 FALLBACK_TRIGGERS로 동작 (오프라인 모드)
 // ─────────────────────────────────────────────
-const CHIKI_TRIGGERS = [
+let CHIKI_TRIGGERS = [];  // loadTriggers() 이후 채워짐
+let CLUE_TRIGGERS  = [];  // loadTriggers() 이후 채워짐
+
+// 백엔드 연결 실패 시 사용할 최소 폴백
+// (triggers.json의 loop_visible=1 항목 중 핵심만 포함)
+const FALLBACK_CHIKI_TRIGGERS = [
   {
-    words: ['김하윤', '하윤'],
+    id: 'hayun', words: ['김하윤', '하윤'],
     toast: '🐰 …그 이름은 잠금 처리된 이름인데.',
     msg:   '김… 하… 윤? 어라라, 이상하다! 그 이름은 잠금 처리된 이름인데? 누가 열쇠를 주웠지? 🗝️🐰',
-    clue: {
-      icon:  '🗝️',
-      title: '잠긴 이름 — 김하윤',
-      desc:  '치키가 반응했다. 이 이름은 시스템에서 잠금 처리된 이름이다. 누군가가 숨기고 싶었던 것.',
-    }
+    clue:  { icon: '🗝️', title: '잠긴 이름 — 김하윤', desc: '치키가 반응했다. 이 이름은 시스템에서 잠금 처리된 이름이다.' }
   },
   {
-    words: ['금고', '거울'],
+    id: 'safe', words: ['금고', '거울'],
     toast: '🐰 그 문은 열면 안 돼…',
-    msg:   '어라라? 그 문을 열려고? 음… 열면 이제 피해자인 척하기 조금 어려워질 텐데? 그래도 괜찮아? 🐰🔒',
-    clue: {
-      icon:  '🔒',
-      title: '금고 / 거울',
-      desc:  '치키가 접근을 막았다. 열면 피해자인 척하기 어려워진다고 했다. 진실이 숨겨져 있다.',
-    }
+    msg:   '어라라? 그 문을 열려고? 음… 열면 이제 피해자인 척하기 조금 어려워질 텐데? 🐰🔒',
+    clue:  { icon: '🔒', title: '금고 / 거울', desc: '치키가 접근을 막았다. 열면 피해자인 척하기 어려워진다고.' }
   },
   {
-    words: ['죽었', '죽어', '살인', '범인'],
+    id: 'murder', words: ['죽었', '죽어', '살인', '범인'],
     toast: '🐰 누가 죽였냐고? 히히…',
-    msg:   '누가 널 죽였냐고? 그건 직접 찾아야 해! 그래야 재밌… 아니, 그래야 안전하니까! 🐰🔍',
-    clue: {
-      icon:  '🔍',
-      title: '사망의 진실',
-      desc:  '치키는 범인을 알고 있지만 직접 말하지 않는다. "직접 찾아야 한다"고 했다.',
-    }
-  },
-  {
-    words: ['루프', '반복', '다시'],
-    toast: '🐰 반복하면 익숙해지거든. 히히.',
-    msg:   '반복하면 익숙해져! 죽는 것도, 울지 않는 것도, 모르는 척하는 것도! 히히 🥕',
-    clue: {
-      icon:  '⏰',
-      title: '루프의 의미',
-      desc:  '"모르는 척하는 것도 익숙해진다"고 했다. 주인공이 무언가를 알면서도 모른 척하고 있다.',
-    }
-  },
-  {
-    words: ['치키', '토끼'],
-    toast: '🐰 불렀어? 나 여기 있었는데!',
-    msg:   '히히, 불렀어? 나는 항상 여기 있었는데! 네가 죽는 순간까지 곁에 있어주는 친구잖아? 🐰💛',
-    clue: {
-      icon:  '🐰',
-      title: '치키의 정체',
-      desc:  '"네가 죽는 순간까지 곁에 있어준다"고 했다. 수호 요정이 아닐 수도 있다.',
-    }
+    msg:   '누가 널 죽였냐고? 그건 직접 찾아야 해! 🐰🔍',
+    clue:  { icon: '🔍', title: '사망의 진실', desc: '치키는 범인을 알고 있지만 직접 말하지 않는다.' }
   },
 ];
 
 // ─────────────────────────────────────────────
 //  상태 변수
 // ─────────────────────────────────────────────
-let currentNPC       = 0;
-let totalSeconds     = 47 * 60 + 12;
-let loopNum          = 1;
-let loopCount        = 1;
-let responseIdx      = 0;
-let timerInterval    = null;
-let chikiToastTimeout= null;
-let currentTab       = 'chat';  // 'chat' | 'clue'
-let clues            = [];      // 치키가 알려준 단서 목록
+let currentNPC        = 0;
+let totalSeconds      = 47 * 60 + 12;
+let loopNum           = 1;
+let loopCount         = 1;
+let responseIdx       = 0;
+let timerInterval     = null;
+let chikiToastTimeout = null;
+let currentTab        = 'chat';  // 'chat' | 'clue'
+let clues             = [];      // 수집된 단서 목록
+let triggersLoaded    = false;   // 트리거 로드 완료 여부
+
+// ─────────────────────────────────────────────
+//  트리거 로드 (GET /chiki-triggers, GET /clue-triggers)
+// ─────────────────────────────────────────────
+async function loadTriggers() {
+  const loop = loopNum;  // 현재 루프 회차를 쿼리로 전달
+
+  try {
+    const [chikiRes, clueRes] = await Promise.all([
+      fetch(`/chiki-triggers?loop=${loop}`),
+      fetch(`/clue-triggers?loop=${loop}`)
+    ]);
+
+    if (!chikiRes.ok || !clueRes.ok) throw new Error('trigger fetch failed');
+
+    const chikiData = await chikiRes.json();
+    const clueData  = await clueRes.json();
+
+    CHIKI_TRIGGERS = chikiData.chiki_triggers ?? [];
+    CLUE_TRIGGERS  = clueData.clue_triggers   ?? [];
+    triggersLoaded = true;
+
+    console.log(`[triggers] 치키 ${CHIKI_TRIGGERS.length}개, 단서 ${CLUE_TRIGGERS.length}개 로드 (loop ${loop})`);
+
+  } catch (err) {
+    // 백엔드 미연결 → 폴백으로 동작
+    console.warn('[triggers] 백엔드 미연결, 폴백 트리거 사용:', err.message);
+    CHIKI_TRIGGERS = FALLBACK_CHIKI_TRIGGERS;
+    CLUE_TRIGGERS  = [];
+    triggersLoaded = true;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  루프 변경 시 트리거 갱신
+//  루프가 바뀌면 공개 범위가 달라지므로 재요청
+// ─────────────────────────────────────────────
+async function reloadTriggersForLoop(newLoop) {
+  loopNum   = newLoop;
+  loopCount = newLoop;
+  triggersLoaded = false;
+  await loadTriggers();
+}
 
 // ─────────────────────────────────────────────
 //  타이머
@@ -138,7 +157,7 @@ function updateTimer() {
   const s   = totalSeconds % 60;
   const str = `${pad(h)}:${pad(m)}:${pad(s)}`;
 
-  document.getElementById('timer-display').textContent= str;
+  document.getElementById('timer-display').textContent = str;
 
   const mins = totalSeconds / 60;
   const d    = document.getElementById('timer-display');
@@ -149,6 +168,10 @@ function updateTimer() {
     d.classList.remove('critical');
   }
 
+  // 30분 이하 진입 시 단서 이벤트 트리거
+  if (totalSeconds === 30 * 60) {
+    fireEventTrigger('timer_30min');
+  }
 }
 
 function pad(n) { return String(n).padStart(2, '0'); }
@@ -198,9 +221,7 @@ function switchTab(tab) {
 //  단서 추가 & 렌더링
 // ─────────────────────────────────────────────
 function addClue(clue) {
-  // 같은 제목의 단서 중복 방지
-  if (clues.some(c => c.title === clue.title)) return;
-
+  if (clues.some(c => c.title === clue.title)) return;  // 중복 방지
   clues.push({ ...clue, time: nowTime() });
 
   if (currentTab !== 'clue') {
@@ -252,11 +273,12 @@ function switchNPC(idx) {
 
   const npc = NPCs[idx];
 
-  // 헤더 아바타
-  const ha = document.getElementById('header-avatar');
-  ha.style.color = npc.tagColor;
-  document.getElementById('header-initial').textContent =
-    npc.name.slice(1, 3) || npc.name.slice(0, 2);
+  // 아바타
+  const av = document.getElementById('header-npc-avatar');
+  if (av) {
+    av.style.cssText   = npc.avatarStyle;
+    av.textContent     = npc.name.slice(1, 3) || npc.name.slice(0, 2);
+  }
 
   // 헤더 텍스트
   document.getElementById('header-npc-name').textContent = npc.name;
@@ -264,15 +286,10 @@ function switchNPC(idx) {
 
   // 헤더 태그
   const ht = document.getElementById('header-tag');
-  ht.textContent        = npc.tag;
-  ht.style.color        = npc.tagColor;
-  ht.style.borderColor  = npc.tagColor + '44';
-  ht.style.background   = npc.tagColor + '14';
-
-  // 헤더 스탯 (제거됨)
-  // document.getElementById('header-stat-label')
-  // document.getElementById('header-stat-bar')
-  // document.getElementById('header-stat-val')
+  ht.textContent       = npc.tag;
+  ht.style.color       = npc.tagColor;
+  ht.style.borderColor = npc.tagColor + '44';
+  ht.style.background  = npc.tagColor + '14';
 
   // 채팅창 전환
   for (let i = 0; i < NPCs.length; i++) {
@@ -316,7 +333,7 @@ function sendMsg() {
   if (!text) return;
   input.value = '';
 
-  checkChikiTrigger(text);  // 치키 트리거 먼저 체크
+  checkChikiTrigger(text);   // 유저 입력 → 치키 트리거 체크
   addPlayerMsg(text);
   setTimeout(showTyping, 400);
 
@@ -371,9 +388,9 @@ function showTyping() {
   }, 1400);
 }
 
-function addNPCMsg() {
+function addNPCMsg(overrideText = null) {
   const npc  = NPCs[currentNPC];
-  const text = npc.responses[responseIdx % npc.responses.length];
+  const text = overrideText ?? npc.responses[responseIdx % npc.responses.length];
   responseIdx++;
 
   const row = document.createElement('div');
@@ -389,23 +406,63 @@ function addNPCMsg() {
     </div>`;
   currentChatEl().appendChild(row);
   scrollToBottom();
+
+  // NPC 발화에 단서 트리거 감지
+  checkClueTrigger(npc.name, text);
 }
 
 // ─────────────────────────────────────────────
-//  치키 트리거 감지
+//  치키 트리거 감지 (유저 입력)
 // ─────────────────────────────────────────────
 function checkChikiTrigger(text) {
+  if (!triggersLoaded) return;
+
   for (const trigger of CHIKI_TRIGGERS) {
     if (trigger.words.some(w => text.includes(w))) {
       showChikiToast(trigger.toast || '🐰 치키가 반응했습니다…');
       setTimeout(() => {
         document.getElementById('chiki-bubble-text').textContent = trigger.msg;
         openChiki();
-        if (trigger.clue) addClue(trigger.clue);  // 단서 객체만 저장
+        if (trigger.clue) addClue(trigger.clue);
       }, 1300);
+      return;  // 첫 번째 매칭만 처리
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+//  단서 트리거 감지 (NPC 발화)
+//  source=npc 항목만 여기서 처리
+//  source=event 항목은 fireEventTrigger()로 처리
+// ─────────────────────────────────────────────
+function checkClueTrigger(npcName, npcText) {
+  if (!triggersLoaded) return;
+
+  for (const trigger of CLUE_TRIGGERS) {
+    if (trigger.source !== 'npc') continue;
+    if (trigger.npc !== npcName) continue;
+
+    const detected = (trigger.detect_words ?? []).some(w => npcText.includes(w));
+    if (detected && trigger.clue) {
+      addClue(trigger.clue);
       return;
     }
   }
+}
+
+// ─────────────────────────────────────────────
+//  이벤트 트리거 발화
+//  source=event 항목 수동 호출용
+//  사용 예) 금고 열림 → fireEventTrigger('safe_opened')
+//           30분 이하 → fireEventTrigger('timer_30min')
+// ─────────────────────────────────────────────
+function fireEventTrigger(eventId) {
+  if (!triggersLoaded) return;
+
+  const trigger = CLUE_TRIGGERS.find(
+    t => t.source === 'event' && t.event === eventId
+  );
+  if (trigger?.clue) addClue(trigger.clue);
 }
 
 function showChikiToast(msg) {
@@ -436,19 +493,22 @@ function triggerDeath() {
   clearInterval(timerInterval);
   document.getElementById('death-overlay').classList.add('show');
 
-  setTimeout(() => {
-    loopNum++;
-    loopCount++;
-    document.getElementById('loop-num').textContent     = loopNum;
-    document.getElementById('loop-count').textContent   = loopCount;
+  setTimeout(async () => {
+    const nextLoop = loopNum + 1;
+
+    document.getElementById('loop-num').textContent   = nextLoop;
+    document.getElementById('loop-count').textContent = nextLoop;
     totalSeconds = 47 * 60 + 12;
+
+    // 루프 변경 → 트리거 재로드 (loop_visible 필터 갱신)
+    await reloadTriggersForLoop(nextLoop);
 
     setTimeout(() => {
       document.getElementById('death-overlay').classList.remove('show');
       timerInterval = setInterval(updateTimer, 1000);
 
       // ── FUTURE: 루프 리셋 백엔드 연동 ──────────
-      // fetch('/new-loop', { method:'POST' });
+      // fetch('/new-loop', { method: 'POST' });
     }, 1200);
   }, 3500);
 }
@@ -488,10 +548,13 @@ document.getElementById('tab-chat').addEventListener('click', () => switchTab('c
 document.getElementById('tab-clue').addEventListener('click', () => switchTab('clue'));
 
 // ─────────────────────────────────────────────
-//  초기화
+//  초기화 — 트리거 로드 후 UI 시작
 // ─────────────────────────────────────────────
-switchNPC(0);
-scrollToBottom();
+(async () => {
+  await loadTriggers();   // 트리거 먼저 로드
+  switchNPC(0);
+  scrollToBottom();
+})();
 
 // ── FUTURE BACKEND INTEGRATION ───────────────────────────
 // async function sendToBackend(text) {
@@ -502,11 +565,7 @@ scrollToBottom();
 //     body: JSON.stringify({ session_id, npc: NPCs[currentNPC].name, text })
 //   });
 //   const data = await res.json();
-//   // data.response  → NPC 응답 텍스트
-//   // data.image_url → 이미지 URL (있을 경우 말풍선 안에 삽입)
 //   addNPCMsgFromBackend(data.response, data.image_url);
+//   if (data.is_dead)       triggerDeath();
+//   if (data.is_loop_reset) await reloadTriggersForLoop(loopNum);
 // }
-//
-// triggerLoopReset()  → POST /player-dead
-// switchNPC(name)     → GET  /available-buttons
-// CHIKI_TRIGGERS      → GET  /chiki-triggers  (트리거 단어 서버에서 관리 시)
