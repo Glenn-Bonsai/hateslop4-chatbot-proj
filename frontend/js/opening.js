@@ -136,11 +136,6 @@ function skipOpening() {
 function goRoom() {
   curtainTransition(() => {
     showPhase('ph-room');
-    const pronoun = STATE.gender === '남성' ? '그' : '그녀';
-    document.getElementById('roomText').innerHTML =
-      `<span class="name-hl">${escHtml(STATE.name)}</span>의 하루가 시작되었다.<br>` +
-      `${pronoun}는 아직 모른다. 오늘 밤,<br>` +
-      `자정이 지나기 전에 <span style="color:var(--red2)">죽는다</span>는 것을.`;
   });
 }
 

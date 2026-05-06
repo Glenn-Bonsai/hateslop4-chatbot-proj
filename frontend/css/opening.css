@@ -297,17 +297,9 @@ body {
   background: linear-gradient(to top, rgba(3,5,8,0.98) 0%, rgba(3,5,8,0.6) 70%, transparent 100%);
   opacity:0; animation: opFadeIn 1s 2s forwards;
 }
-.room-label {
-  font-size:10px; letter-spacing:3px; color:var(--muted); margin-bottom:8px;
-}
-.room-text {
-  font-family:'Nanum Myeongjo',serif; font-size:16px; color:var(--dim);
-  line-height:1.8; margin-bottom:24px;
-}
-.room-text .name-hl { color:var(--teal); }
 
 .room-continue-btn {
-  padding:12px 0; width:100%; text-align:center;
+  padding:16px 0; width:100%; text-align:center;
   border:1px solid rgba(200,210,200,0.15);
   font-size:11px; letter-spacing:3px; color:var(--muted);
   cursor:pointer; background:transparent; transition:all 0.3s;
