@@ -69,6 +69,10 @@
           <source src="/frontend/assets/opening.mp4" type="video/mp4">
         </video>
       -->
+      <video id="opVideo" autoplay playsinline
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+        <source src="/frontend/images/opening_vd.mp4" type="video/mp4">
+      </video>
 
       <!-- 핏빛 번짐 배경 -->
       <div class="blood-spread"></div>
@@ -104,8 +108,6 @@
       <img class="room-bg-svg" src="/frontend/images/room_img.png" alt="방 배경">
 
       <div class="room-overlay">
-        <div class="room-label">📍 현재 위치 — 자택</div>
-        <div class="room-text" id="roomText"><!-- JS로 채워짐 --></div>
         <button class="room-continue-btn" onclick="goChiki()">▶&ensp;계속</button>
       </div>
 
