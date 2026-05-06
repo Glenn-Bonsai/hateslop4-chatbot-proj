@@ -4,7 +4,7 @@
 //        치키 트리거 / 드로어 / 사망 연출
 // ═══════════════════════════════════════════════
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'https://hateslop4-dead24.onrender.com';
 
 // ─────────────────────────────────────────────
 //  NPC 데이터
@@ -12,48 +12,48 @@ const BASE_URL = 'http://localhost:8000';
 // ─────────────────────────────────────────────
 const NPCs = [
   {
-    id:0, name:'김도현', sub:'34세 · 남성', tag:'내담자',
-    tagColor:'#6a7f99', avatarStyle:'color:#6a7f99;',
-    profile:'images/kim_profile.png', initials:'도현',
-    statLabel:'경계심', statVal:72, statColor:'#c0392b',
-    choices:['그 이름을 왜 묻습니까?','이틀 전 일이요?','기억하고 있습니다','왜 화났어요?'],
-    responses:[
+    id: 0, name: '김도현', sub: '34세 · 남성', tag: '내담자',
+    tagColor: '#6a7f99', avatarStyle: 'color:#6a7f99;',
+    profile: 'images/kim_profile.png', initials: '도현',
+    statLabel: '경계심', statVal: 72, statColor: '#c0392b',
+    choices: ['그 이름을 왜 묻습니까?', '이틀 전 일이요?', '기억하고 있습니다', '왜 화났어요?'],
+    responses: [
       '선생님은 정말 기억이 안 나십니까?',
       '그 이름을 왜 묻습니까? 선생님이 먼저 꺼낼 이름은 아닌 것 같은데요.',
       '이번엔 안 그러려고 왔습니다. 그냥… 확인하고 싶었습니다.',
     ]
   },
   {
-    id:1, name:'차서연', sub:'32세 · 여성', tag:'신경과 의사',
-    tagColor:'#5a8870', avatarStyle:'color:#5a8870;',
-    profile:'images/cha_profile.png', initials:'서연',
-    statLabel:'의심도', statVal:58, statColor:'#b07030',
-    choices:['커피 안 마실게요','박주원 알아요?','사무실 뒤진 거예요?','패턴이 뭔가요?'],
-    responses:[
+    id: 1, name: '차서연', sub: '32세 · 여성', tag: '신경과 의사',
+    tagColor: '#5a8870', avatarStyle: 'color:#5a8870;',
+    profile: 'images/cha_profile.png', initials: '서연',
+    statLabel: '의심도', statVal: 58, statColor: '#b07030',
+    choices: ['커피 안 마실게요', '박주원 알아요?', '사무실 뒤진 거예요?', '패턴이 뭔가요?'],
+    responses: [
       '패턴이 이상해요. 선생님 주변에서만 반복되는 이유가 있겠죠.',
       '커피 드실래요? 오늘 상태 안 좋아 보여서요.',
       '박주원이라고, 제 친한 친구였어요. 혹시 이 얼굴 기억 안 나세요?',
     ]
   },
   {
-    id:2, name:'엄마', sub:'61세 · 여성', tag:'가족',
-    tagColor:'#8a7040', avatarStyle:'color:#8a7040;',
-    profile:'images/umma_profile.png', initials:'엄마',
-    statLabel:'집착도', statVal:89, statColor:'#b07030',
-    choices:['밥 먹었어요','내일이 기일이에요?','동생 기억해요','엄마 미안해요'],
-    responses:[
+    id: 2, name: '엄마', sub: '61세 · 여성', tag: '가족',
+    tagColor: '#8a7040', avatarStyle: 'color:#8a7040;',
+    profile: 'images/umma_profile.png', initials: '엄마',
+    statLabel: '집착도', statVal: 89, statColor: '#b07030',
+    choices: ['밥 먹었어요', '내일이 기일이에요?', '동생 기억해요', '엄마 미안해요'],
+    responses: [
       '밥은 먹었어? 얼굴이 왜 이렇게 상했어, 재희야.',
       '내일이 무슨 날인지 기억하니? 아니야, 됐다.',
       '엄마한텐 너밖에 없어. 그게 제일 무서운 말인 거 엄마도 알아.',
     ]
   },
   {
-    id:3, name:'박도원', sub:'60세 · 남성', tag:'청소부',
-    tagColor:'#7a6a5a', avatarStyle:'color:#7a6a5a;',
-    profile:'images/park_profile.png', initials:'도원',
-    statLabel:'수상함', statVal:45, statColor:'#7a6a5a',
-    choices:['누구세요?','문 앞에 두세요','딸이 있으세요?','여기서 일한 지 얼마나 됐어요?'],
-    responses:[
+    id: 3, name: '박도원', sub: '60세 · 남성', tag: '청소부',
+    tagColor: '#7a6a5a', avatarStyle: 'color:#7a6a5a;',
+    profile: 'images/park_profile.png', initials: '도원',
+    statLabel: '수상함', statVal: 45, statColor: '#7a6a5a',
+    choices: ['누구세요?', '문 앞에 두세요', '딸이 있으세요?', '여기서 일한 지 얼마나 됐어요?'],
+    responses: [
       '아이고, 선생님. 바닥에 유리 조각이 아직 남아 있네요.',
       '우리 딸이 생각나서요. 혹시 이 얼굴, 어디서 익숙하지 않습니까?',
       '아비는요, 자식이 남긴 글을 보면 압니다.',
@@ -65,49 +65,49 @@ const NPCs = [
 //  트리거 데이터
 // ─────────────────────────────────────────────
 let CHIKI_TRIGGERS = [];
-let CLUE_TRIGGERS  = [];
+let CLUE_TRIGGERS = [];
 
 const FALLBACK_CHIKI_TRIGGERS = [
   {
     id: 'hayun', words: ['김하윤', '하윤'],
     toast: '🐰 …그 이름은 잠금 처리된 이름인데.',
-    msg:   '김… 하… 윤? 어라라, 이상하다! 그 이름은 잠금 처리된 이름인데? 누가 열쇠를 주웠지? 🗝️🐰',
-    clue:  { icon: '🗝️', title: '잠긴 이름 — 김하윤', desc: '치키가 반응했다. 이 이름은 시스템에서 잠금 처리된 이름이다.' }
+    msg: '김… 하… 윤? 어라라, 이상하다! 그 이름은 잠금 처리된 이름인데? 누가 열쇠를 주웠지? 🗝️🐰',
+    clue: { icon: '🗝️', title: '잠긴 이름 — 김하윤', desc: '치키가 반응했다. 이 이름은 시스템에서 잠금 처리된 이름이다.' }
   },
   {
     id: 'safe', words: ['금고', '거울'],
     toast: '🐰 그 문은 열면 안 돼…',
-    msg:   '어라라? 그 문을 열려고? 음… 열면 이제 피해자인 척하기 조금 어려워질 텐데? 🐰🔒',
-    clue:  { icon: '🔒', title: '금고 / 거울', desc: '치키가 접근을 막았다. 열면 피해자인 척하기 어려워진다고.' }
+    msg: '어라라? 그 문을 열려고? 음… 열면 이제 피해자인 척하기 조금 어려워질 텐데? 🐰🔒',
+    clue: { icon: '🔒', title: '금고 / 거울', desc: '치키가 접근을 막았다. 열면 피해자인 척하기 어려워진다고.' }
   },
   {
     id: 'murder', words: ['죽었', '죽어', '살인', '범인'],
     toast: '🐰 누가 죽였냐고? 히히…',
-    msg:   '누가 널 죽였냐고? 그건 직접 찾아야 해! 🐰🔍',
-    clue:  { icon: '🔍', title: '사망의 진실', desc: '치키는 범인을 알고 있지만 직접 말하지 않는다.' }
+    msg: '누가 널 죽였냐고? 그건 직접 찾아야 해! 🐰🔍',
+    clue: { icon: '🔍', title: '사망의 진실', desc: '치키는 범인을 알고 있지만 직접 말하지 않는다.' }
   },
 ];
 
 // ─────────────────────────────────────────────
 //  상태 변수
 // ─────────────────────────────────────────────
-let currentNPC        = 0;
-let loopNum           = parseInt(sessionStorage.getItem('loop_num') || '1', 10);
-let loopCount         = loopNum;
-let responseIdx       = 0;
-let timerInterval     = null;
+let currentNPC = 0;
+let loopNum = parseInt(sessionStorage.getItem('loop_num') || '1', 10);
+let loopCount = loopNum;
+let responseIdx = 0;
+let timerInterval = null;
 let chikiToastTimeout = null;
-let currentTab        = 'chat';
-let clues             = [];
-let triggersLoaded    = false;
-let isSending         = false;
-let isSwitchingNPC    = false;
-let isDeadProcessing  = false;
-let lastLoopCount     = 0;
+let currentTab = 'chat';
+let clues = [];
+let triggersLoaded = false;
+let isSending = false;
+let isSwitchingNPC = false;
+let isDeadProcessing = false;
+let lastLoopCount = 0;
 
 // ★ 추가: 대화 횟수 카운터
-let msgCount          = 0;
-const MSG_LIMIT       = 20;
+let msgCount = 0;
+const MSG_LIMIT = 20;
 let isMsgLimitReached = false;   // 중복 실행 방지
 
 // ─────────────────────────────────────────────
@@ -117,9 +117,9 @@ async function fetchAPI(path, body = {}) {
   const session_id = sessionStorage.getItem('session_id');
   try {
     const res = await fetch(`${BASE_URL}${path}`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ session_id, ...body }),
+      body: JSON.stringify({ session_id, ...body }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
@@ -141,21 +141,21 @@ async function loadTriggers() {
     ]);
     if (!chikiRes.ok || !clueRes.ok) throw new Error('trigger fetch failed');
     const chikiData = await chikiRes.json();
-    const clueData  = await clueRes.json();
+    const clueData = await clueRes.json();
     CHIKI_TRIGGERS = chikiData.chiki_triggers ?? [];
-    CLUE_TRIGGERS  = clueData.clue_triggers   ?? [];
+    CLUE_TRIGGERS = clueData.clue_triggers ?? [];
     triggersLoaded = true;
     console.log(`[triggers] 치키 ${CHIKI_TRIGGERS.length}개, 단서 ${CLUE_TRIGGERS.length}개 로드 (loop ${loop})`);
   } catch (err) {
     console.warn('[triggers] 백엔드 미연결, 폴백 트리거 사용:', err.message);
     CHIKI_TRIGGERS = FALLBACK_CHIKI_TRIGGERS;
-    CLUE_TRIGGERS  = [];
+    CLUE_TRIGGERS = [];
     triggersLoaded = true;
   }
 }
 
 async function reloadTriggersForLoop(newLoop) {
-  loopNum   = newLoop;
+  loopNum = newLoop;
   loopCount = newLoop;
   triggersLoaded = false;
   await loadTriggers();
@@ -178,7 +178,7 @@ function updateTimer() {
 
   const d = document.getElementById('timer-display');
   if (remaining < 180) d.classList.add('critical');
-  else                 d.classList.remove('critical');
+  else d.classList.remove('critical');
 
   if (remaining <= 0) { triggerDeath('timer'); return; }
 }
@@ -196,7 +196,7 @@ function updateMsgCounter() {
   const remaining = Math.max(0, MSG_LIMIT - msgCount);
   el.textContent = `${remaining}회 남음`;
   if (remaining <= 5) el.style.color = '#c0392b';
-  else                el.style.color = '';
+  else el.style.color = '';
 }
 
 // ─────────────────────────────────────────────
@@ -207,9 +207,9 @@ function triggerMsgLimit() {
   isMsgLimitReached = true;
 
   // 입력창 비활성화
-  const input   = document.getElementById('msg-input');
+  const input = document.getElementById('msg-input');
   const sendBtn = document.getElementById('send-btn');
-  if (input)   input.disabled   = true;
+  if (input) input.disabled = true;
   if (sendBtn) sendBtn.disabled = true;
 
   // 치키 토스트
@@ -238,31 +238,31 @@ function triggerMsgLimit() {
 function switchTab(tab) {
   currentTab = tab;
 
-  const chatScroll  = document.getElementById('chat-scroll');
+  const chatScroll = document.getElementById('chat-scroll');
   const choicesArea = document.getElementById('choices-area');
-  const inputArea   = document.getElementById('input-area');
-  const cluePanel   = document.getElementById('clue-panel');
-  const tabChat     = document.getElementById('tab-chat');
-  const tabClue     = document.getElementById('tab-clue');
-  const badge       = document.getElementById('tab-clue-badge');
-  const npcTabs     = document.getElementById('npc-tabs');
-  const header      = document.getElementById('header');
+  const inputArea = document.getElementById('input-area');
+  const cluePanel = document.getElementById('clue-panel');
+  const tabChat = document.getElementById('tab-chat');
+  const tabClue = document.getElementById('tab-clue');
+  const badge = document.getElementById('tab-clue-badge');
+  const npcTabs = document.getElementById('npc-tabs');
+  const header = document.getElementById('header');
 
   if (tab === 'chat') {
-    chatScroll.style.display  = '';
+    chatScroll.style.display = '';
     choicesArea.style.display = '';
-    inputArea.style.display   = '';
-    npcTabs.style.display     = '';
-    header.style.display      = '';
+    inputArea.style.display = '';
+    npcTabs.style.display = '';
+    header.style.display = '';
     cluePanel.classList.remove('active');
     tabChat.classList.add('active');
     tabClue.classList.remove('active');
   } else {
-    chatScroll.style.display  = 'none';
+    chatScroll.style.display = 'none';
     choicesArea.style.display = 'none';
-    inputArea.style.display   = 'none';
-    npcTabs.style.display     = 'none';
-    header.style.display      = 'none';
+    inputArea.style.display = 'none';
+    npcTabs.style.display = 'none';
+    header.style.display = 'none';
     cluePanel.classList.add('active');
     tabChat.classList.remove('active');
     tabClue.classList.add('active');
@@ -284,7 +284,7 @@ function addClue(clue) {
 }
 
 function renderClues() {
-  const list  = document.getElementById('clue-list');
+  const list = document.getElementById('clue-list');
   const count = document.getElementById('clue-count');
   count.textContent = clues.length;
 
@@ -318,14 +318,14 @@ function renderClues() {
 // ─────────────────────────────────────────────
 function switchNPC(idx) {
   isSwitchingNPC = true;
-  currentNPC  = idx;
+  currentNPC = idx;
   responseIdx = 0;
 
   document.querySelectorAll('.npc-tab').forEach((t, i) => {
     t.classList.toggle('active', i === idx);
 
     // ★ NPC 탭 아바타 이미지 교체
-    const npcData  = NPCs[i];
+    const npcData = NPCs[i];
     const avatarEl = t.querySelector('.npc-tab-avatar');
     if (avatarEl) {
       avatarEl.innerHTML = `
@@ -342,17 +342,17 @@ function switchNPC(idx) {
   const av = document.getElementById('header-npc-avatar');
   if (av) {
     av.style.cssText = npc.avatarStyle;
-    av.textContent   = npc.name.slice(1, 3) || npc.name.slice(0, 2);
+    av.textContent = npc.name.slice(1, 3) || npc.name.slice(0, 2);
   }
 
   document.getElementById('header-npc-name').textContent = npc.name;
-  document.getElementById('header-npc-sub').textContent  = npc.sub;
+  document.getElementById('header-npc-sub').textContent = npc.sub;
 
   const ht = document.getElementById('header-tag');
-  ht.textContent       = npc.tag;
-  ht.style.color       = npc.tagColor;
+  ht.textContent = npc.tag;
+  ht.style.color = npc.tagColor;
   ht.style.borderColor = npc.tagColor + '44';
-  ht.style.background  = npc.tagColor + '14';
+  ht.style.background = npc.tagColor + '14';
 
   for (let i = 0; i < NPCs.length; i++) {
     const el = document.getElementById(`chat-npc-${i}`);
@@ -393,7 +393,7 @@ function selectChoice(text) {
 function sendMsg() {
   if (isSending || isSwitchingNPC || isMsgLimitReached) return;
   const input = document.getElementById('msg-input');
-  const text  = input.value.trim();
+  const text = input.value.trim();
   if (!text) return;
   input.value = '';
 
@@ -454,7 +454,7 @@ function appendTypingRow() {
 }
 
 function addNPCMsg(overrideText = null) {
-  const npc  = NPCs[currentNPC];
+  const npc = NPCs[currentNPC];
   const text = overrideText ?? npc.responses[responseIdx % npc.responses.length];
   responseIdx++;
 
@@ -476,13 +476,13 @@ function addNPCMsg(overrideText = null) {
 }
 
 function renderNPCImage(url) {
-  const chat    = currentChatEl();
+  const chat = currentChatEl();
   const lastRow = chat.querySelector('.msg-row:last-child');
   if (!lastRow) return;
-  const bubble  = lastRow.querySelector('.bubble');
+  const bubble = lastRow.querySelector('.bubble');
   if (!bubble) return;
   const img = document.createElement('img');
-  img.src   = url;
+  img.src = url;
   img.style.cssText = 'max-width:200px;border-radius:8px;margin-top:6px;display:block;';
   img.onerror = () => img.remove();
   bubble.insertAdjacentElement('afterend', img);
@@ -577,11 +577,11 @@ async function triggerDeath(cause = 'timer') {
 //  백엔드 채팅 전송
 // ─────────────────────────────────────────────
 async function sendToBackend(text) {
-  const input   = document.getElementById('msg-input');
+  const input = document.getElementById('msg-input');
   const sendBtn = document.getElementById('send-btn');
 
-  isSending        = true;
-  input.disabled   = true;
+  isSending = true;
+  input.disabled = true;
   sendBtn.disabled = true;
 
   appendTypingRow();
@@ -591,11 +591,11 @@ async function sendToBackend(text) {
     if (!session_id) throw new Error('no session_id');
 
     const res = await fetch(`${BASE_URL}/chat`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         session_id,
-        npc_name:   NPCs[currentNPC].name,
+        npc_name: NPCs[currentNPC].name,
         user_input: text,
       }),
     });
@@ -627,7 +627,7 @@ async function sendToBackend(text) {
         const loopData = await fetchAPI('/new-loop');
         lastLoopCount = nextLoop;
         const resolvedLoop = loopData?.loop_count ?? nextLoop;
-        document.getElementById('loop-num').textContent   = resolvedLoop;
+        document.getElementById('loop-num').textContent = resolvedLoop;
         document.getElementById('loop-count').textContent = resolvedLoop;
 
         if (loopData?.is_game_over) {
@@ -642,10 +642,10 @@ async function sendToBackend(text) {
     if (tr) tr.remove();
     addNPCMsg();
   } finally {
-    isSending        = false;
+    isSending = false;
     // 메시지 한도 도달 시 입력창 비활성 유지
     if (!isMsgLimitReached) {
-      input.disabled   = false;
+      input.disabled = false;
       sendBtn.disabled = false;
       input.focus();
     }
@@ -692,13 +692,13 @@ document.getElementById('tab-clue').addEventListener('click', () => switchTab('c
 (async () => {
   // ★ sessionStorage에서 루프 번호 읽어서 UI 반영
   const storedLoop = parseInt(sessionStorage.getItem('loop_num') || '1', 10);
-  loopNum   = storedLoop;
+  loopNum = storedLoop;
   loopCount = storedLoop;
   sessionStorage.setItem('loop_num', String(loopNum));
 
-  const loopNumEl   = document.getElementById('loop-num');
+  const loopNumEl = document.getElementById('loop-num');
   const loopCountEl = document.getElementById('loop-count');
-  if (loopNumEl)   loopNumEl.textContent   = loopNum;
+  if (loopNumEl) loopNumEl.textContent = loopNum;
   if (loopCountEl) loopCountEl.textContent = loopNum;
 
   await loadTriggers();
