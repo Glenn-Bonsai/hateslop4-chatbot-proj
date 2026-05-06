@@ -629,7 +629,7 @@ async function finalizeAndNavigate() {
     // 오프라인 모드에서도 last_button_id 저장
     sessionStorage.setItem('last_button_id', String(GAME_STATE.lastButtonId));
   } finally {
-    window.location.href = 'chatroom.html';
+    window.location.href = '/frontend/chatroom.html';
   }
 }
 
