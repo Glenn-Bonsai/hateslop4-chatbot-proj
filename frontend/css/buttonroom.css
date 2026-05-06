@@ -509,20 +509,24 @@ body {
    통합 팝업 — 이벤트(전화·문자·초인종) + location 변경
 ══════════════════════════════════ */
 .event-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.85);
-  z-index: 500;
+  position: absolute; /* game-wrapper 기준 전체 덮기 */
+  inset: 0;           /* 화면 전체(top, left, right, bottom: 0) */
+  z-index: 500;       /* top-bar(600)의 바로 아래 */
+  background: #05070d; /* 뒤쪽 텍스트/화면을 완벽히 가리는 배경색 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.25s ease;
 }
 .event-popup.show {
   opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
 }
+
 .event-popup-inner {
+  transform: scale(0.85); /* 팝업 창 확대 애니메이션 분리 */
+  transition: transform 0.25s ease;
   background: rgba(8, 10, 16, 0.93);
   border-radius: 14px;
   padding: 28px 44px;
@@ -534,6 +538,9 @@ body {
   box-shadow:
     0 8px 40px rgba(0, 0, 0, 0.65),
     0 0 0 1px rgba(255,255,255,0.06);
+}
+.event-popup.show .event-popup-inner {
+  transform: scale(1);
 }
 
 /* ── 이벤트 타입 (전화·문자·초인종) ── */

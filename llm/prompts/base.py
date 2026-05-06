@@ -4,11 +4,15 @@
 주요 역할
 - 수치 딕셔너리 → 자연어 설명 변환 (stats_to_description)
 - 수치 범위 → 말투 지침 생성 (stats_to_tone_guidance)
+- 루프 회차 → 정보 공개 제한 지침 생성 (_LOOP_RESTRICTION)
 - 캐릭터 SystemMessage 조립 (build_system_prompt)
 - 대화 기록 → LangChain 메시지 리스트 변환 (build_message_history)
 
 새로운 수치 항목이 추가될 경우 stats_to_tone_guidance()에
 해당 항목의 분기 로직만 추가하면 된다.
+
+루프별 공개 범위를 수정하려면 _LOOP_RESTRICTION 딕셔너리만 수정하면 된다.
+캐릭터 파일(cha_seoyeon.py 등)은 수정 불필요.
 """
 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
@@ -204,6 +208,87 @@ def stats_to_tone_guidance(stats: dict) -> str:
 
     return "\n".join(guidance)
 
+
+# ────────────────────────────────────────────
+# 루프 회차 → 정보 공개 제한 지침
+# ────────────────────────────────────────────
+# 루프별로 NPC가 유저에게 공개할 수 있는 정보의 범위를 제한한다.
+# RAG가 loop_level 필터로 청크를 제한하더라도, 시스템 프롬프트의
+# base_personality 전문이 그대로 노출되면 LLM이 스스로 판단해
+# 후반 정보를 발화할 수 있다. 이 블록이 그것을 명시적으로 차단한다.
+#
+# 수정 방법: 아래 딕셔너리의 문자열만 편집하면 된다.
+# 캐릭터 파일(cha_seoyeon.py 등)은 수정 불필요.
+# ────────────────────────────────────────────
+
+_LOOP_RESTRICTION: dict[int, str] = {
+    1: """
+=== 이번 루프 정보 공개 제한 (절대 준수) ===
+지금은 초반(루프 1)입니다. 아래 규칙을 반드시 따르세요.
+
+[이번 루프에서 절대 먼저 꺼내지 말 것]
+- 박주원과 자신의 친밀한 관계(베프, 절친 등)를 직접 밝히는 것
+- 살인사건과 유저를 직접 연결 짓는 발언
+- 사무실 수색 사실 인정
+- 금고·약물 조작 언급
+
+[이번 루프에서 허용되는 범위]
+- 업무적 대화, 일정 관련 언급
+- 김도현 환자 관련 대화
+- 박주원의 이름·사진을 언급하는 것 (단, 깊은 관계는 숨길 것)
+- 살인사건을 가볍게 언급하는 것 (유저와의 연결 없이)
+""",
+
+    2: """
+=== 이번 루프 정보 공개 제한 (절대 준수) ===
+지금은 중반(루프 2)입니다. 아래 규칙을 반드시 따르세요.
+
+[이번 루프에서 절대 먼저 꺼내지 말 것]
+- 사무실 수색 사실 인정
+- 금고·약물 조작 직접 언급
+
+[이번 루프에서 허용되는 범위]
+- 박주원이 친한 친구였음을 밝히는 것
+- 박주원이 유저를 알고 있었다는 사실 언급
+- 살인사건과 유저의 연결 가능성을 암시하는 것
+- 루프 1에서 허용된 모든 범위
+""",
+
+    3: """
+=== 이번 루프 정보 공개 제한 (절대 준수) ===
+지금은 후반(루프 3)입니다. 아래 규칙을 반드시 따르세요.
+
+[이번 루프에서 절대 먼저 꺼내지 말 것]
+- 약물 조작 사실을 먼저 직접 말하는 것
+  (단, 유저가 증거를 직접 제시할 경우에 한해 우회적 인정 가능)
+
+[이번 루프에서 허용되는 범위]
+- 사무실 수색 사실 인정
+- 금고·소품 직접 언급
+- 살인사건과 유저의 연결을 직접 압박하는 발언
+- 루프 1·2에서 허용된 모든 범위
+""",
+}
+
+# 루프 범위를 벗어났을 때 기본값 (루프 3 규칙 그대로 적용)
+_LOOP_RESTRICTION_DEFAULT = _LOOP_RESTRICTION[3]
+
+
+def _get_loop_restriction(loop_count: int) -> str:
+    """
+    루프 회차에 맞는 정보 공개 제한 지침 문자열을 반환한다.
+
+    Parameters
+    ----------
+    loop_count : 현재 루프 회차 (1~3)
+
+    Returns
+    -------
+    루프별 정보 공개 제한 문자열
+    """
+    return _LOOP_RESTRICTION.get(loop_count, _LOOP_RESTRICTION_DEFAULT)
+
+
 # ────────────────────────────────────────────
 # SystemMessage 조립
 # ────────────────────────────────────────────
@@ -239,8 +324,8 @@ def build_system_prompt(
     player_gender   : 유저 성별 ("남자" / "여자")
     """
     # ── 플레이어 관련 파생 값 계산 ──────────────────
-    first_name   = get_first_name(player_name)    # "정재희" → "재희"
-    child_term   = get_child_term(player_gender)  # "남자" → "아들", 나머지 → "딸"
+    first_name   = get_first_name(player_name)     # "정재희" → "재희"
+    child_term   = get_child_term(player_gender)   # "남자" → "아들", 나머지 → "딸"
     sibling_term = get_sibling_term(player_gender) # "남자" → "오빠", 나머지 → "언니"
 
     # ── base_personality / few_shot 플레이스홀더 치환 ──
@@ -254,11 +339,21 @@ def build_system_prompt(
     base_personality = base_personality.format(**fmt_kwargs)
     few_shot         = few_shot.format(**fmt_kwargs)
 
+    # ── 루프별 정보 공개 제한 지침 ──────────────────
+    loop_restriction = _get_loop_restriction(loop_count)
+
     # ── 프롬프트 조립 ───────────────────────────────
     clues_str = ", ".join(clues) if clues else "없음"
 
     return f"""당신은 '{npc_name}'입니다.
 아래의 기본 성격과 말투 지침을 반드시 따르세요.
+
+=== 응답 규칙 (매우 중요) ===
+- 모든 답변은 반드시 1문장 또는 2문장 이내로 짧게 작성하세요.
+- 어떤 정보를 참고하더라도 반드시 '{npc_name}'의 말투로만 답변하세요.
+- 해설하거나 요약하는 문체를 절대 사용하지 마세요.
+
+{loop_restriction}
 
 === 기본 성격 (절대 변하지 않음) ===
 {base_personality}

@@ -521,7 +521,7 @@ async function onChoice(choice, btn) {
   document.getElementById('choicesSection').innerHTML = '';
 
   // 4) 3초 후 "▶ 계속" 버튼 등장
-  setTimeout(() => showContinueBtn(choice.id), 3000);
+  setTimeout(() => showContinueBtn(choice.id), 2000);
 }
 
 // ─────────────────────────────────────────────
