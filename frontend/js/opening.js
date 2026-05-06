@@ -18,16 +18,30 @@ const STATE = {
 //  인자: n = 이름 HTML span, g = 성별 문자열
 // ────────────────────────────────────────────
 const CHIKI_LINES = [
-  (n) => `${n}야, 안녕~? 🐰✨`,
-  ()  => `아이고 우리 친구. 아주 <span class="warn">불쌍하게 죽어버렸구나</span>. 여기가 어디냐고? 음… 죽기 전으로 돌아가기 전에 잠깐 들르는 곳이야. 히히.`,
-  ()  => `너무 겁먹지는 마. 치키가 특별히 <span class="hl">한 번 더 살려줄게</span>. 대신 규칙이 있어.`,
+  (n) => `${n}, 안녕~? 🐰✨`,
+  ()  => `아이고, 우리 친구. 아주 <span class="warn">불쌍하게 죽어버렸구나</span>. 여기가 어디냐구? 음… 죽기 전으로 돌아가기 전에 잠깐 들르는 곳?`,
+  ()  => `히히. 🐰 너무 겁먹지는 마. 치키가 특별히 <span class="hl">한 번 더 살려줄게</span>. 대신 규칙이 있어.`,
   ()  => `너는 곧 <span class="warn">죽기 24시간 전</span>으로 돌아가. 그리고 오늘 <span class="warn">자정이 되기 전까지</span>, 너를 죽인 범인이 누군지 찾아야 해.`,
-  ()  => `범인을 맞히면? 치키가 구해줄게! 잘못된 말 한마디, 잘못된 선택 하나로 <span class="warn">자정 전에도 죽을 수 있어</span>. 조심해.`,
-  ()  => `네 정보야. 죽으면서 기억을 조금 잃었으니까, 참고해.`,
+  ()  => `범인을 맞히면? 치키가 구해줄게! ✨ 범인이 너를 죽이기 전에, 짜잔! 하고 나타나서 막아주는 거야.`,
+  ()  => `물론… 틀리면? <span class="warn">또 죽는 거지</span>. 🐰⏰`,
+  ()  => `아하. 죽으면서 기억을 조금 잃었구나? 괜찮아. 아주 간단하게만 알려줄게. 너무 많이 알려주면 재미없잖아… 아니, 위험하잖아.`,
+  ()  => `네가 <span class="warn">범인을 기억해버릴 수도</span> 있으니까~`,
+  // index 8: infoBox가 이 대사 앞에 등장
+  ()  => `이 정도면 충분해. 너는 사람의 마음을 들여다보는 일을 해. 그런데 이상하지? 사람 마음은 그렇게 잘 안다면서, 왜 누군가의 원한은 몰랐을까? 🐰`,
+  ()  => `범인이 누구냐구? 그건 친구가 맞혀야지~ 치키가 다 말해주면 <span class="hl">게임이 아니잖아</span>🩸`,
+  ()  => `대신 의심할 사람들은 알려줄게. 짜잔~ 🎀 <span class="hl">의심할 만한 사람 리스트!</span>`,
+  ()  => `<div style="text-align:left; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; margin-top:5px;">
+            1. <b>김도현</b>: &lt;안식&gt;의 환자<br>
+            2. <b>차서연</b>: 동료 의사<br>
+            3. <b>박도원</b>: &lt;안식&gt;의 청소부<br>
+            4. <b>엄마</b>: 너를 가장 오래 알고 있는 사람
+          </div>`,
+  ()  => `지금부터 네 선택이 너를 가를 거야. 누구를 믿을지, 누구를 피할지, 누구를 더 화나게 만들지. 잘못 고르면 또 죽어🐰`,
+  (n) => `그럼… 이제 시작해볼까? 죽기 24시간 전으로 돌아가는 거야, ${n}. 들어가서 행동을 선택하고, 의심 가는 인물들과 이야기하고, 단서를 모아.`,
 ];
 
 const CHIKI_LAST_LINE =
-  `오늘 만나는 <span class="warn">모든 사람을 의심해</span>. 친절한 사람도, 걱정해주는 사람도. 웃는 얼굴 뒤에 칼을 숨기고 있을 수 있잖아? 🐰`;
+  `그리고 마지막에 <span class="warn">범인을 맞혀봐</span>. 치키가 끝까지 지켜봐줄게. 히히 🐰⏰🩸`;
 
 // ────────────────────────────────────────────
 //  유틸
@@ -89,16 +103,6 @@ function goOpening() {
 }
 
 function startOpeningSequence() {
-  const video = document.getElementById('opVideo');
-
-  // 영상 종료 후 타이머 시작
-  video.addEventListener('ended', () => runTimer());
-
-  // 영상 로드 실패 대비 fallback
-  video.addEventListener('error', () => runTimer());
-}
-
-function runTimer() {
   let secs   = 24 * 60;
   const clockEl = document.getElementById('opClock');
 
@@ -115,6 +119,7 @@ function runTimer() {
   }, 80);
 
   // 5.5초 후 방 화면으로 자동 진행
+  // 실제 영상 연결 시: video.addEventListener('ended', goRoom) 으로 교체
   setTimeout(() => {
     clearInterval(tick);
     goRoom();
@@ -164,11 +169,9 @@ function startChikiDialogue() {
   let i = 0;
 
   function showNext() {
-    // 본 대사 다 끝나면 → 정보 박스 + 마지막 힌트 + 시작 버튼
+    // 모든 대사 끝 → 마지막 대사 + 시작 버튼
     if (i >= CHIKI_LINES.length) {
       setTimeout(() => {
-        infoBox.classList.add('show');
-
         const last = document.createElement('div');
         last.className = 'bubble';
         last.innerHTML = CHIKI_LAST_LINE;
@@ -180,6 +183,20 @@ function startChikiDialogue() {
       return;
     }
 
+    // index 8 직전: infoBox 표시 후 잠깐 대기
+    if (i === 8) {
+      infoBox.classList.add('show');
+      setTimeout(() => infoBox.scrollIntoView({ behavior:'smooth', block:'nearest' }), 200);
+      setTimeout(() => {
+        showNextBubble();
+      }, 1000); // infoBox 보여주고 1초 후 대사 재개
+      return;
+    }
+
+    showNextBubble();
+  }
+
+  function showNextBubble() {
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
     bubble.innerHTML = CHIKI_LINES[i](nameSpan, STATE.gender);
