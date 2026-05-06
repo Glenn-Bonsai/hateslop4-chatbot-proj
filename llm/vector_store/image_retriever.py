@@ -117,7 +117,8 @@ def retrieve_image(response_text: str, character: str) -> str:
 
     distance = results["distances"][0][0]
     similarity = 1.0 - distance
-    # print(f"[DEBUG] similarity: {similarity}")
+    print(f"[DEBUG] similarity: {similarity}")
+    print(f"[DEBUG] matched: {results['metadatas'][0][0]['image_url']}")
 
     if similarity >= IMAGE_THRESHOLD:
         return results["metadatas"][0][0]["image_url"]
