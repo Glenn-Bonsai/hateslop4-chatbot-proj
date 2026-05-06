@@ -88,7 +88,6 @@ const FALLBACK_CHIKI_TRIGGERS = [
 //  상태 변수
 // ─────────────────────────────────────────────
 let currentNPC        = 0;
-let totalSeconds      = 24 * 60;    // ★ 24분 고정
 let loopNum           = parseInt(sessionStorage.getItem('loop_num') || '1', 10);
 let loopCount         = loopNum;
 let responseIdx       = 0;
@@ -159,23 +158,25 @@ async function reloadTriggersForLoop(newLoop) {
 }
 
 // ─────────────────────────────────────────────
-//  타이머
+//  타이머 — buttonroom에서 시작한 timer_start 이어받기
 // ─────────────────────────────────────────────
 function updateTimer() {
-  if (totalSeconds <= 0) { triggerDeath('timer'); return; }
-  totalSeconds--;
+  const timerStart = parseInt(sessionStorage.getItem('timer_start') || '0', 10);
+  const TOTAL_SECONDS = 24 * 60;
+  const remaining = timerStart
+    ? Math.max(0, TOTAL_SECONDS - Math.floor((Date.now() - timerStart) / 1000))
+    : 0;
 
-  const h   = Math.floor(totalSeconds / 3600);
-  const m   = Math.floor((totalSeconds % 3600) / 60);
-  const s   = totalSeconds % 60;
+  const h = Math.floor(remaining / 3600);
+  const m = Math.floor((remaining % 3600) / 60);
+  const s = remaining % 60;
   document.getElementById('timer-display').textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
 
-  const mins = totalSeconds / 60;
-  const d    = document.getElementById('timer-display');
-  if (mins < 3) d.classList.add('critical');
-  else          d.classList.remove('critical');
+  const d = document.getElementById('timer-display');
+  if (remaining < 180) d.classList.add('critical');
+  else                 d.classList.remove('critical');
 
-  if (totalSeconds === 30 * 60) fireEventTrigger('timer_30min');
+  if (remaining <= 0) { triggerDeath('timer'); return; }
 }
 
 function pad(n) { return String(n).padStart(2, '0'); }
@@ -548,22 +549,12 @@ async function triggerDeath(cause = 'timer') {
 
   clearInterval(timerInterval);
 
-  // death_cause 저장 → suspect.js에서 타이머 사망 분기 처리
   sessionStorage.setItem('death_cause', cause);
   sessionStorage.setItem('loop_num', String(loopNum));
 
-  document.getElementById('death-overlay').classList.add('show');
-
-  // 백엔드 사망 처리 (병렬)
-  await Promise.all([
-    new Promise(r => setTimeout(r, 3500)),
-    fetchAPI('/player-dead'),
-  ]);
-
-  setTimeout(() => {
-    document.getElementById('death-overlay').classList.remove('show');
-    window.location.href = 'suspect.html';
-  }, 1200);
+  // 백엔드 사망 처리 후 바로 suspect.html 이동
+  await fetchAPI('/player-dead');
+  window.location.href = 'suspect.html';
 }
 
 // ─────────────────────────────────────────────
@@ -683,11 +674,19 @@ document.getElementById('tab-clue').addEventListener('click', () => switchTab('c
 //  초기화
 // ─────────────────────────────────────────────
 (async () => {
-  // loop_num 세션 저장 (suspect.js에서 읽기 위해)
+  // ★ sessionStorage에서 루프 번호 읽어서 UI 반영
+  const storedLoop = parseInt(sessionStorage.getItem('loop_num') || '1', 10);
+  loopNum   = storedLoop;
+  loopCount = storedLoop;
   sessionStorage.setItem('loop_num', String(loopNum));
+
+  const loopNumEl   = document.getElementById('loop-num');
+  const loopCountEl = document.getElementById('loop-count');
+  if (loopNumEl)   loopNumEl.textContent   = loopNum;
+  if (loopCountEl) loopCountEl.textContent = loopNum;
 
   await loadTriggers();
   switchNPC(0);
-  updateMsgCounter();   // 카운터 초기 표시 (20회 남음)
+  updateMsgCounter();
   scrollToBottom();
 })();

@@ -205,8 +205,10 @@ function goToMorning() {
     document.getElementById('morning-fallback')
   );
 
-  // sessionStorage 루프 업데이트
+  // ★ 다음 루프 sessionStorage 업데이트
   sessionStorage.setItem('loop_num', String(nextLoop));
+  // ★ 타이머 리셋 — 유저가 화면 탭해서 buttonroom 진입할 때 새 24분 시작
+  sessionStorage.removeItem('timer_start');
 }
 
 // 아침 씬 탭 → 버튼룸으로
