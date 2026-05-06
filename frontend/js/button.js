@@ -8,13 +8,13 @@
 //  게임 상태
 // ─────────────────────────────────────────────
 const GAME_STATE = {
-  timer:           { h:0, m:24, s:0 },  // 24분 제한
-  currentNodeId:   'root',              // 현재 위치한 트리 노드
-  buttonHistory:   [],                  // 클릭한 버튼 ID 누적 → 백엔드 전달용
-  contextHistory:  [],                  // 클릭한 버튼 텍스트 누적 → 챗봇 맥락용
-  lastButtonId:    null,                // 가장 마지막 선택 ID
-  disabledIds:     [],                  // 백엔드에서 수신한 비활성화 버튼 ID 목록
-  sessionId:       null,                // POST /new-game 에서 수신
+  timer: { h: 0, m: 24, s: 0 },  // 24분 제한
+  currentNodeId: 'root',              // 현재 위치한 트리 노드
+  buttonHistory: [],                  // 클릭한 버튼 ID 누적 → 백엔드 전달용
+  contextHistory: [],                  // 클릭한 버튼 텍스트 누적 → 챗봇 맥락용
+  lastButtonId: null,                // 가장 마지막 선택 ID
+  disabledIds: [],                  // 백엔드에서 수신한 비활성화 버튼 ID 목록
+  sessionId: null,                // POST /new-game 에서 수신
   currentLocation: null,                // 현재 location (변경 감지용)
 };
 
@@ -402,7 +402,7 @@ function getChildButtons(nodeId) {
   const children = BUTTON_TREE[String(nodeId)];
   if (!children) return [];
   return Object.entries(children).map(([id, text]) => ({
-    id:       Number(id),
+    id: Number(id),
     text,
     disabled: GAME_STATE.disabledIds.includes(Number(id)),
   }));
@@ -414,12 +414,12 @@ function getChildButtons(nodeId) {
 function createDrips() {
   const container = document.getElementById('dripContainer');
   const drips = [
-    { left:'12%', len:'22px', dur:'7s',  delay:'1.5s' },
-    { left:'28%', len:'14px', dur:'9s',  delay:'4.2s' },
-    { left:'43%', len:'30px', dur:'11s', delay:'0.8s' },
-    { left:'61%', len:'18px', dur:'8s',  delay:'3.0s' },
-    { left:'75%', len:'25px', dur:'10s', delay:'6.5s' },
-    { left:'88%', len:'12px', dur:'13s', delay:'2.1s' },
+    { left: '12%', len: '22px', dur: '7s', delay: '1.5s' },
+    { left: '28%', len: '14px', dur: '9s', delay: '4.2s' },
+    { left: '43%', len: '30px', dur: '11s', delay: '0.8s' },
+    { left: '61%', len: '18px', dur: '8s', delay: '3.0s' },
+    { left: '75%', len: '25px', dur: '10s', delay: '6.5s' },
+    { left: '88%', len: '12px', dur: '13s', delay: '2.1s' },
   ];
   drips.forEach(d => {
     const el = document.createElement('div');
@@ -437,7 +437,7 @@ function createDrips() {
 //  sessionStorage 'timer_start'에 시작 epoch(ms) 저장
 //  페이지 전환 후에도 남은 시간 이어받음
 // ─────────────────────────────────────────────
-const timerEl       = document.getElementById('timerDisplay');
+const timerEl = document.getElementById('timerDisplay');
 const TOTAL_SECONDS = 24 * 60;  // 24분 고정
 
 // 이미 시작된 타이머가 있으면 이어받고, 없으면 새로 시작
@@ -459,9 +459,9 @@ function updateButtonTimer() {
   const m = Math.floor((remaining % 3600) / 60);
   const s = remaining % 60;
   timerEl.textContent =
-    String(h).padStart(2,'0') + ':' +
-    String(m).padStart(2,'0') + ':' +
-    String(s).padStart(2,'0');
+    String(h).padStart(2, '0') + ':' +
+    String(m).padStart(2, '0') + ':' +
+    String(s).padStart(2, '0');
 
   if (remaining < 300) timerEl.classList.add('urgent');
 
@@ -559,9 +559,9 @@ async function onChoice(choice, btn) {
 async function startNewGame() {
   try {
     const res = await fetch('/new-game', {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ player_name: '플레이어', player_gender: '미설정' }),
+      body: JSON.stringify({ player_name: '플레이어', player_gender: '미설정' }),
     });
     const data = await res.json();
     GAME_STATE.sessionId = data.session_id;
@@ -580,7 +580,7 @@ async function fetchDisabledButtons() {
   try {
     const session_id = GAME_STATE.sessionId || sessionStorage.getItem('session_id');
     if (!session_id) return;
-    const res  = await fetch(`/available-buttons?session_id=${session_id}`);
+    const res = await fetch(`/available-buttons?session_id=${session_id}`);
     const data = await res.json();
     GAME_STATE.disabledIds = data.disabled_button_ids || [];
     console.log('[비활성화 버튼]', GAME_STATE.disabledIds);
@@ -595,9 +595,9 @@ async function recordButton(buttonId) {
     const session_id = GAME_STATE.sessionId || sessionStorage.getItem('session_id');
     if (!session_id) return;
     await fetch('/record-button', {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ session_id, button_id: buttonId }),
+      body: JSON.stringify({ session_id, button_id: buttonId }),
     });
   } catch (e) {
     console.warn('[recordButton 실패]', e);
@@ -608,13 +608,13 @@ async function recordButton(buttonId) {
 async function finalizeAndNavigate() {
   try {
     const session_id = GAME_STATE.sessionId || sessionStorage.getItem('session_id');
-    const res  = await fetch('/finalize', {
-      method:  'POST',
+    const res = await fetch('/finalize', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
+      body: JSON.stringify({
         session_id,
         last_button_id: GAME_STATE.lastButtonId,
-        context:        GAME_STATE.contextHistory,
+        context: GAME_STATE.contextHistory,
       }),
     });
     const data = await res.json();
@@ -670,16 +670,16 @@ function updateScene({ imageUrl, speaker, dialogue, location, place, choices }) 
 // prefix: 'select_' | 'start_'
 function applyScene(nodeId, prefix = 'select_') {
   if (!window.SCENE_DATA) return;
-  const key   = prefix + String(nodeId);
+  const key = prefix + String(nodeId);
   const scene = window.SCENE_DATA[key];
   if (!scene) return;
 
   const applyUpdate = () => {
     updateScene({
-      speaker:  { name: scene.speaker_name, role: scene.speaker_role },
+      speaker: { name: scene.speaker_name, role: scene.speaker_role },
       dialogue: scene.dialogue,
       location: scene.location,
-      place:    scene.place,
+      place: scene.place,
     });
   };
 
@@ -688,9 +688,9 @@ function applyScene(nodeId, prefix = 'select_') {
   if (scene.location && scene.location !== GAME_STATE.currentLocation) {
     if (GAME_STATE.currentLocation !== null) {
       popupQueue.push((callback) => showPopup({
-        type:     'location',
-        icon:     '📍',
-        label:    scene.location,
+        type: 'location',
+        icon: '📍',
+        label: scene.location,
         sublabel: scene.place,
         duration: 2000,
       }, callback));
@@ -700,13 +700,14 @@ function applyScene(nodeId, prefix = 'select_') {
 
   if (scene.event) {
     popupQueue.push((callback) => showPopup({
-      type:     'event',
-      icon:     scene.event_icon || '🔔',
-      label:    scene.event,
+      type: 'event',
+      icon: scene.event_icon || '🔔',
+      label: scene.event,
       duration: 2000,
     }, callback));
   }
 
+  /*
   // 3) 인물 변경
   if (scene.speaker_name && scene.speaker_name !== GAME_STATE.currentSpeaker && scene.speaker_name !== '치키') {
     if (GAME_STATE.currentSpeaker !== null) {
@@ -721,6 +722,7 @@ function applyScene(nodeId, prefix = 'select_') {
     }
     GAME_STATE.currentSpeaker = scene.speaker_name;
   }
+  */
 
   // 큐 실행: 팝업들을 순서대로 실행하고, 마지막에 씬 적용
   runQueue(popupQueue, applyUpdate);
@@ -736,17 +738,17 @@ function runQueue(queue, finalCallback) {
 }
 
 function showPopup(opts, callback) {
-  const popup   = document.getElementById('eventPopup');
-  const iconEl  = document.getElementById('eventIcon');
+  const popup = document.getElementById('eventPopup');
+  const iconEl = document.getElementById('eventIcon');
   const labelEl = document.getElementById('eventLabel');
-  const subEl   = document.getElementById('eventSublabel');
+  const subEl = document.getElementById('eventSublabel');
 
-  iconEl.textContent  = opts.icon;
+  iconEl.textContent = opts.icon;
   labelEl.textContent = opts.label;
 
   if (subEl) {
-    subEl.textContent    = opts.sublabel || '';
-    subEl.style.display  = opts.sublabel ? 'block' : 'none';
+    subEl.textContent = opts.sublabel || '';
+    subEl.style.display = opts.sublabel ? 'block' : 'none';
   }
 
   popup.dataset.type = opts.type || 'event';
