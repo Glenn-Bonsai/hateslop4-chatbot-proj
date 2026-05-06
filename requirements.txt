@@ -82,4 +82,6 @@ wheel==0.46.3
 zipp==3.23.1
 langchain
 langchain-openai
+langgraph
 pytest
+fastmcp
