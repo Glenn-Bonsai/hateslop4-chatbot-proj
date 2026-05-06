@@ -47,7 +47,7 @@ const VILLAIN_MAP = {
 const DEATH_IMAGE_MAP = {
   '김도현': 'images/사망_루프.png',
   '차서연': 'images/사망_피 토 하는 사람.png',
-  '박도원': 'images/사망_칼.png',
+  '박도원': 'images/사망2_칼.png',
   '엄마':   'images/사망_방.png',
 };
 
