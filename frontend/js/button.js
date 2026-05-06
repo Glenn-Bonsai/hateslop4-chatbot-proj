@@ -646,44 +646,6 @@ function setSceneImage(url) {
 }
 
 // ─────────────────────────────────────────────
-//  배경 이미지 매핑 및 교체 (location 기반)
-// ─────────────────────────────────────────────
-const BG_IMAGE_MAP = {
-  '주인공의 방':    'bg_room.png',
-  '현관 앞':       'bg_entrance.png',
-  '거실':          'bg_living.png',
-  '거실 창가':     'bg_living.png',
-  '휴게실':        'bg_lounge.png',
-  '진료실':        'bg_director.png',
-  '진료실 앞':     'bg_corridor.png',
-  '원장실':        'bg_director.png',
-  '원장실 앞':     'bg_corridor.png',
-  '복도':          'bg_corridor.png',
-  '상담실':        'bg_consulting.png',
-  '병원 1층 로비': 'bg_lobby.png',
-};
-const BG_IMAGE_BASE = '/frontend/images/bg/';
-
-function setSceneBg(location) {
-  const el = document.getElementById('sceneBgImage');
-  if (!el) return;
-  const filename = BG_IMAGE_MAP[location];
-  if (!filename) {
-    el.style.display = 'none';
-    return;
-  }
-  const url = BG_IMAGE_BASE + filename;
-  if (el.src.endsWith(filename)) return;  // 동일 이미지면 스킵
-  el.style.opacity = '0';
-  el.src = url;
-  el.onload = () => {
-    el.style.display = 'block';
-    requestAnimationFrame(() => { el.style.opacity = '1'; });
-  };
-  el.onerror = () => { el.style.display = 'none'; };
-}
-
-// ─────────────────────────────────────────────
 //  씬 전체 업데이트 (외부에서 호출 가능)
 // ─────────────────────────────────────────────
 function updateScene({ imageUrl, speaker, dialogue, location, place, choices }) {
@@ -697,7 +659,6 @@ function updateScene({ imageUrl, speaker, dialogue, location, place, choices }) 
   }
   if (location) {
     document.querySelector('.loc-name').textContent = location;
-    setSceneBg(location);
   }
   if (place) {
     document.querySelector('.loc-place-name .name').textContent = place;
@@ -715,6 +676,7 @@ function applyScene(nodeId, prefix = 'select_') {
 
   const applyUpdate = () => {
     updateScene({
+      imageUrl: window.SCENE_IMAGE_MAP?.[key] || null,  // ★ 추가: 씬별 인물 이미지
       speaker: { name: scene.speaker_name, role: scene.speaker_role },
       dialogue: scene.dialogue,
       location: scene.location,
@@ -848,6 +810,17 @@ function showPopup(opts, callback) {
     console.error('[SCENE_DATA 로드 실패]', e.message);
   }
 
+  // ★ 추가: scene_image_map.json 로드 (씬별 인물 이미지 매핑)
+  try {
+    const res = await fetch('/frontend/data/scene_image_map.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    window.SCENE_IMAGE_MAP = await res.json();
+    console.log('[이미지 맵 로드 성공]', Object.keys(window.SCENE_IMAGE_MAP).length, '개');
+  } catch (e) {
+    console.warn('[이미지 맵 로드 실패]', e.message);
+    window.SCENE_IMAGE_MAP = {};
+  }
+
   await startNewGame();
   applyScene('root', 'select_');
   setTimeout(() => showContinueBtn('root'), 3000);
@@ -855,4 +828,4 @@ function showPopup(opts, callback) {
 })();
 
 // 전역 API
-window.GameUI = { updateScene, applyScene, renderChoices, setSceneImage, setSceneBg };
+window.GameUI = { updateScene, applyScene, renderChoices, setSceneImage };
