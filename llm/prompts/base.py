@@ -302,6 +302,7 @@ def build_system_prompt(
     clues           : list,
     player_name     : str,
     player_gender   : str,
+    loop_restriction: str | None = None,
 ) -> str:
     """
     캐릭터별 SystemMessage 문자열을 조립해 반환한다.
@@ -340,7 +341,8 @@ def build_system_prompt(
     few_shot         = few_shot.format(**fmt_kwargs)
 
     # ── 루프별 정보 공개 제한 지침 ──────────────────
-    loop_restriction = _get_loop_restriction(loop_count)
+    loop_restriction = loop_restriction if loop_restriction is not None \
+                       else _get_loop_restriction(loop_count)
 
     # ── 프롬프트 조립 ───────────────────────────────
     clues_str = ", ".join(clues) if clues else "없음"
