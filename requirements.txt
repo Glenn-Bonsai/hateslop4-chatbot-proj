@@ -84,4 +84,5 @@ langchain
 langchain-openai
 langgraph
 pytest
-fastmcpaiofiles
+fastmcp
+aiofiles
