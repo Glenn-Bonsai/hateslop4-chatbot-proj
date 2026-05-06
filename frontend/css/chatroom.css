@@ -4,22 +4,22 @@
 
 /* ── CSS 변수 (디자인 토큰) ── */
 :root {
-  --bg-base:     #111010;
-  --bg-surface:  #1c1b1a;
-  --bg-surface2: #1e1d1b;
-  --bg-surface3: #242220;
-  --bg-header:   #0e0d0c;
-  --bg-tabbar:   #161514;
-  --bubble-npc:    #1e1d1b;
-  --bubble-player: #3a1f1f;
-  --accent:      #c0392b;
-  --accent-dim:  rgba(192,57,43,0.12);
-  --text-primary:   #d4cfc8;
-  --text-secondary: #6a6460;
-  --text-dim:       #4a4744;
-  --border:        rgba(255,255,255,0.06);
-  --border-warm:   rgba(255,255,255,0.08);
-  --border-accent: rgba(192,57,43,0.3);
+  --bg-base:     #05070d;
+  --bg-surface:   #101114; /* 입력창 배경 등 */
+  --bg-surface2:  #141518; /* 헤더 아바타 배경 등 */
+  --bg-surface3:  #1a1b1e; /* 스탯 바 배경 등 */
+  --bg-header:    #0a0b0d; /* 상단 프로필 바 */
+  --bg-tabbar:    #08090b; /* NPC 선택 탭바 */
+  --bubble-npc:    #16171a; 
+  --bubble-player: #2d1616;
+  --accent:      #d42018;
+  --accent-dim:  rgba(212, 32, 24, 0.12);
+  --text-primary:   #c8ccca; 
+  --text-secondary: #7a807d; 
+  --text-dim:       #4d5250;
+  --border:        rgba(255, 255, 255, 0.04); 
+  --border-warm:   rgba(255, 255, 255, 0.07); 
+  --border-accent: rgba(212, 32, 24, 0.2);
   --chiki-purple: rgba(180,160,220,0.12);
   --chiki-border: rgba(180,160,220,0.25);
   --radius-sm: 4px;
