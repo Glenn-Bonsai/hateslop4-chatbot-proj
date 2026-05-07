@@ -34,7 +34,7 @@ ROOT = Path(__file__).parent.parent   # ★ 변경: frontend/ 한 단계 위 = �
 
 SCENES_JSON   = ROOT / "frontend" / "data" / "scenes.json"
 CAPTIONS_JSON = ROOT / "llm" / "vector_store" / "data" / "button_image_captions.json"  # ★ 변경
-IMAGES_DIR    = ROOT / "llm" / "vector_store" / "data" / "images" / "button"           # ★ 변경
+IMAGES_DIR    = ROOT / "llm" / "vector_store" / "data" / "button"           # ★ 변경
 OUTPUT_JSON   = ROOT / "frontend" / "data" / "scene_image_map.json"
 
 # 프론트에서 이미지를 서빙하는 URL prefix (main.py 기준)
