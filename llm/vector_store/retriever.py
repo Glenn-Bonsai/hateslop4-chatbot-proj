@@ -15,7 +15,6 @@ retriever.py — Phase 3 RAG 파이프라인 3단계
     관련 청크 텍스트를 "\n\n---\n\n"으로 이어 붙인 단일 문자열.
     검색 결과가 없으면 빈 문자열("") 반환.
 
-엔지니어 B(image_retriever.py)와 독립적으로 동작한다.
 """
 
 from __future__ import annotations
