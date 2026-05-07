@@ -1,0 +1,220 @@
+/* ════════════════════════════════════════════
+   ending.css  —  루프3 사망 엔딩 화면
+   ════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+:root {
+  --bg:            #0a0908;
+  --bg-surface:    #131211;
+  --accent:        #c0392b;
+  --accent-dim:    rgba(192,57,43,0.15);
+  --text-primary:  #d4cfc8;
+  --text-secondary:#7a7470;
+  --text-dim:      #4a4744;
+  --border:        rgba(255,255,255,0.07);
+  --chiki-purple:  rgba(180,160,220,0.10);
+  --chiki-border:  rgba(180,160,220,0.22);
+  --chiki-glow:    rgba(180,160,220,0.18);
+}
+
+html, body {
+  width:100%; height:100%;
+  background: var(--bg);
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+#app {
+  width: 100%;
+  max-width: 430px;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ── 배경 그라디언트 빛 효과 ── */
+#app::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(180,160,220,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 스캔라인 ── */
+.noise-overlay {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.012) 2px, rgba(0,0,0,0.012) 4px
+  );
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* ═══════════════════════════════════
+   치키 이미지 영역
+═══════════════════════════════════ */
+.chiki-stage {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-top: 36px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.chiki-img {
+  width: 190px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 28px rgba(180,160,220,0.28));
+  animation: chiki-float 3.5s ease-in-out infinite;
+  transition: filter 0.6s ease;
+}
+
+/* 이미지 교체 페이드 */
+.chiki-img.fade-out {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.chiki-img.fade-in {
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+@keyframes chiki-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-9px); }
+}
+
+/* ═══════════════════════════════════
+   말풍선 영역
+═══════════════════════════════════ */
+.bubble-wrap {
+  width: 100%;
+  padding: 0 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-start;
+  padding-top: 18px;
+  position: relative;
+  z-index: 10;
+}
+
+.chiki-bubble {
+  width: 100%;
+  background: var(--chiki-purple);
+  border: 1px solid var(--chiki-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  position: relative;
+  min-height: 80px;
+  box-shadow: 0 0 24px var(--chiki-glow), inset 0 1px 0 rgba(255,255,255,0.04);
+  animation: bubble-in 0.5s ease forwards;
+}
+
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 말풍선 꼬리 (치키 방향) */
+.chiki-bubble::before {
+  content: '';
+  position: absolute;
+  top: -8px; left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-bottom-color: var(--chiki-border);
+  border-top: none;
+}
+
+.bubble-text {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--text-primary);
+  font-family: 'Nanum Myeongjo', serif;
+  letter-spacing: 0.01em;
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+
+/* 특수 텍스트 강조 */
+.bubble-text .name-em {
+  color: #c4a8e8;
+  font-weight: 700;
+}
+
+.bubble-text .ominous {
+  color: #e8a09a;
+  font-weight: 700;
+}
+
+/* 커서 */
+.cursor {
+  display: inline-block;
+  color: rgba(180,160,220,0.7);
+  font-size: 15px;
+  margin-left: 1px;
+  animation: blink-cursor 0.9s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+.cursor.hidden {
+  opacity: 0;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── 탭 힌트 ── */
+.tap-hint {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.15);
+  text-transform: uppercase;
+  animation: blink-hint 2s ease-in-out infinite;
+  margin-top: 4px;
+}
+
+@keyframes blink-hint {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+
+/* ── 모든 메시지 끝난 후 어둠 페이드 ── */
+#app.fade-to-black::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: #000;
+  z-index: 200;
+  animation: fade-black 1.5s ease forwards;
+}
+
+@keyframes fade-black {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

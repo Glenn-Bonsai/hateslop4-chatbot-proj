@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>죽기 24시간 전 — 엔딩</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/frontend/css/ending.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- 치키 이미지 (고정) -->
+  <div class="chiki-stage" id="chiki-stage">
+    <img class="chiki-img" id="chiki-img"
+         src="images/chiki_img.png" alt="치키"
+         onerror="this.style.display='none'">
+  </div>
+
+  <!-- 말풍선 영역 -->
+  <div class="bubble-wrap">
+    <div class="chiki-bubble" id="chiki-bubble">
+      <div class="bubble-text" id="bubble-text"></div>
+      <!-- 커서 깜빡임 -->
+      <span class="cursor" id="cursor">|</span>
+    </div>
+    <!-- 다음으로 진행 힌트 -->
+    <div class="tap-hint" id="tap-hint" style="display:none;">화면을 탭해서 계속</div>
+  </div>
+
+  <!-- 배경 노이즈 레이어 -->
+  <div class="noise-overlay"></div>
+
+</div>
+<script src="/frontend/js/ending.js"></script>
+</body>
+</html>
