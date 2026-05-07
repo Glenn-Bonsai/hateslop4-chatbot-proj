@@ -221,7 +221,7 @@ function tapMorning() {
 // ─────────────────────────────────────────────
 //  엔딩 씬 (루프 3 종료)
 // ─────────────────────────────────────────────
-function goToEnding() {
+/*function goToEnding() {
   showScene('scene-ending');
 
   loadImg(
@@ -229,7 +229,12 @@ function goToEnding() {
     'images/엔딩.png',
     document.getElementById('ending-fallback')
   );
+}*/
+function goToEnding() {
+  // 엔딩 전용 페이지로 이동
+  window.location.href = 'ending.html';
 }
+ 
 
 // ─────────────────────────────────────────────
 //  백엔드 연동
