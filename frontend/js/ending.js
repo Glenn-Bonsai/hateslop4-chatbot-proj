@@ -8,12 +8,13 @@
 //  치키 이미지 목록
 //  실제 파일명에 맞게 수정해주세요
 // ─────────────────────────────────────────────
+const _V = '?v=2';
 const CHIKI_IMAGES = {
-  default:  '/frontend/images/치키_기본.png',
-  smile:    '/frontend/images/치키_웃음.png',
-  laugh:    '/frontend/images/치키_크게웃음.png',
-  close:    '/frontend/images/치키_접근.png',
-  whisper:  '/frontend/images/치키_귓속말.png',
+  default:  '/frontend/images/치키_기본.png' + _V,
+  smile:    '/frontend/images/치키_웃음.png' + _V,
+  laugh:    '/frontend/images/치키_크게웃음.png' + _V,
+  close:    '/frontend/images/치키_접근.png' + _V,
+  whisper:  '/frontend/images/치키_귓속말.png' + _V,
 };
 
 // ─────────────────────────────────────────────

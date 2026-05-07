@@ -13,9 +13,9 @@
   --text-primary:  #ece8e2;
   --text-secondary:#7a807d;
   --text-dim:      #4d5250;
-  --chiki-purple:  rgba(180,160,220,0.12);
-  --chiki-border:  rgba(180,160,220,0.25);
-  --chiki-glow:    rgba(180,160,220,0.18);
+  --chiki-charcoal: rgba(38, 40, 43, 0.72);
+  --chiki-border:   rgba(120, 125, 130, 0.40);
+  --chiki-glow:     rgba(100, 105, 110, 0.22);
   --radius-sm:     4px;
   --radius-md:     10px;
   --font-main:     'Noto Sans KR', sans-serif;
@@ -95,8 +95,8 @@ html, body {
    말풍선 카드
 ═══════════════════════════════════ */
 .chiki-card {
-  background: var(--chiki-purple);
-  border: 1px solid rgba(255,255,255,0.10);
+  background: var(--chiki-charcoal);
+  border: 1px solid var(--chiki-border);
   border-radius: var(--radius-md);
   padding: 18px 18px 16px;
   backdrop-filter: blur(6px);
@@ -132,7 +132,7 @@ html, body {
 /* ── 커서 ── */
 .cursor {
   display: inline-block;
-  color: rgba(180,160,220,0.75);
+  color: rgba(180, 185, 190, 0.80);
   font-size: 15px;
   margin-left: 1px;
   animation: blink-cursor 0.9s step-end infinite;
@@ -167,26 +167,28 @@ html, body {
 
 .restart-btn {
   width: 100%;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(45, 48, 52, 0.70);
+  border: 1px solid rgba(120, 125, 130, 0.50);
   border-radius: var(--radius-sm);
   padding: 13px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(210, 213, 216, 0.95);
   font-size: 13px;
   font-family: var(--font-main);
   letter-spacing: 0.1em;
   cursor: pointer;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  box-shadow: 0 0 10px rgba(80, 85, 90, 0.20);
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
   animation: fade-in-btn 0.6s ease forwards;
 }
 
 .restart-btn:hover,
 .restart-btn:active {
-  background: rgba(192,57,43,0.2);
-  border-color: rgba(192,57,43,0.45);
-  color: var(--accent);
+  background: rgba(60, 64, 68, 0.95);
+  border-color: rgba(160, 165, 170, 0.70);
+  color: #e8eaec;
+  box-shadow: 0 0 16px rgba(100, 105, 110, 0.30);
 }
 
 @keyframes fade-in-btn {
