@@ -9,11 +9,11 @@
 // ─────────────────────────────────────────────
 // 캐릭터별 기본(fallback) 이미지 — 씬 이미지가 없거나 로드 실패 시 사용
 const DEFAULT_CHARACTER_IMAGES = {
-  '김도현': '/static/images/button/김도현/김도현_무표정.png',
-  '박도원': '/static/images/button/박도원/박도원_은은한미소_착한사람인척.png',
-  '엄마':   '/static/images/button/엄마/엄마_정색.png',
-  '차서연': '/static/images/button/차서연/차서연_무표정.png',
-  '치키':   '/static/images/button/치키/치키_기본치키.png',
+  '김도현': 'https://res.cloudinary.com/dqu0dyn5k/image/upload/f_png/v1778592804/button/%EA%B9%80%EB%8F%84%ED%98%84/%EA%B9%80%EB%8F%84%ED%98%84_%EB%AC%B4%ED%91%9C%EC%A0%95.png',
+  '박도원': 'https://res.cloudinary.com/dqu0dyn5k/image/upload/f_png/v1778592789/button/%EB%B0%95%EB%8F%84%EC%9B%90/%EB%B0%95%EB%8F%84%EC%9B%90_%EC%9D%80%EC%9D%80%ED%95%9C%EB%AF%B8%EC%86%8C_%EC%B0%A9%ED%95%9C%EC%82%AC%EB%9E%8C%EC%9D%B8%EC%B2%99.png',
+  '엄마':   'https://res.cloudinary.com/dqu0dyn5k/image/upload/f_png/v1778592818/button/%EC%97%84%EB%A7%88/%EC%97%84%EB%A7%88_%EC%A0%95%EC%83%89.png',
+  '차서연': 'https://res.cloudinary.com/dqu0dyn5k/image/upload/f_png/v1778592766/button/%EC%B0%A8%EC%84%9C%EC%97%B0/%EC%B0%A8%EC%84%9C%EC%97%B0_%EB%AC%B8%EC%9E%901.png',
+  '치키':   'https://res.cloudinary.com/dqu0dyn5k/image/upload/f_png/v1778592778/button/%EC%B9%98%ED%82%A4/%EC%B9%98%ED%82%A4_%EA%B8%B0%EB%B3%B8%EC%B9%98%ED%82%A4.png',
 };
 
 const GAME_STATE = {

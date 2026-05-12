@@ -86,3 +86,4 @@ langgraph
 pytest
 fastmcp
 aiofiles
+cloudinary==1.44.2
