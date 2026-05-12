@@ -2,17 +2,13 @@
 FastAPI 앱 진입점.
 
 실행 방법:
-    # 프로젝트 루트에서 실행
-    uvicorn backend.main:app --reload --port 8000
 
-    # 또는 backend/ 폴더 안에서 실행
+    # backend/ 폴더 안에서 실행
     cd backend && uvicorn main:app --reload --port 8000
 
     # 브라우저에서 아래 주소로 접속
-    http://localhost:8000/frontend/buttonroom.html
-
-Swagger UI:
     http://localhost:8000/
+
 """
 
 from fastapi import FastAPI, Request
