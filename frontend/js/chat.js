@@ -195,7 +195,7 @@ function triggerMsgLimit() {
 
   // 1.3초 후 치키 드로어 열기
   setTimeout(() => {
-    document.getElementById('chiki-bubble-text').textContent =
+    document.getElementById('chiki-popup-text').textContent =
       '대화를 충분히 나눴지? 이제 범인을 골라볼 차례야! 치키가 도와줄게~ 🐰✨';
     openChiki();
   }, 1300);
@@ -549,7 +549,7 @@ function checkChikiTrigger(text) {
     if (trigger.words.some(w => text.includes(w))) {
       showChikiToast(trigger.toast || '🐰 치키가 반응했습니다…');
       setTimeout(() => {
-        document.getElementById('chiki-bubble-text').textContent = trigger.msg;
+        document.getElementById('chiki-popup-text').textContent = trigger.msg;
         openChiki();
         if (trigger.clue) addClue(trigger.clue);
       }, 1300);
@@ -597,13 +597,13 @@ function showChikiToast(msg) {
 //  치키 드로어
 // ─────────────────────────────────────────────
 function openChiki() {
-  document.getElementById('chiki-drawer').classList.add('open');
-  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('chiki-popup').classList.add('open');
+  document.getElementById('chiki-overlay').classList.add('show');
 }
 
 function closeChiki() {
-  document.getElementById('chiki-drawer').classList.remove('open');
-  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('chiki-popup').classList.remove('open');
+  document.getElementById('chiki-overlay').classList.remove('show');
 }
 
 // ─────────────────────────────────────────────
@@ -679,7 +679,7 @@ async function sendToBackend(text) {
 
         showChikiToast('🐰 이제 범인을 골라볼 시간이야~!');
         setTimeout(() => {
-          document.getElementById('chiki-bubble-text').textContent =
+          document.getElementById('chiki-popup-text').textContent =
             '대화를 충분히 나눴지? 이제 범인을 골라볼 차례야! 치키가 도와줄게~ 🐰✨';
           openChiki();
         }, 1300);
