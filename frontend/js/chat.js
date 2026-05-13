@@ -16,22 +16,12 @@ const NPCs = [
     tagColor: '#5a8870',
     profile: 'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595780/chat/%EC%B0%A8%EC%84%9C%EC%97%B0/%EC%B0%A8%EC%84%9C%EC%97%B0_%ED%94%84%EB%A1%9C%ED%95%84.png',
     choices: ['커피 안 마실게요', '박주원 알아요?', '사무실 뒤진 거예요?', '패턴이 뭔가요?'],
-    responses: [
-      '패턴이 이상해요. 선생님 주변에서만 반복되는 이유가 있겠죠.',
-      '커피 드실래요? 오늘 상태 안 좋아 보여서요.',
-      '박주원이라고, 제 친한 친구였어요. 혹시 이 얼굴 기억 안 나세요?',
-    ]
   },
   {
-    id: 1, name: '엄마', sub: '61세 · 여성', tag: '가족',
+    id: 1, name: '엄마', displayName: '윤미경', sub: '61세 · 여성', tag: '가족',
     tagColor: '#8a7040',
     profile: 'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595815/chat/%EC%97%84%EB%A7%88/%EC%97%84%EB%A7%88_%ED%9B%84%ED%9B%97%20%EB%82%98%EB%8F%84%20%EB%AD%94%ED%91%9C%EC%A0%95%EC%9D%B8%EC%A7%80%EB%AA%B0%EB%9D%BC%20%ED%9B%84%ED%9B%97%20%EB%A8%B9%EA%B8%88.png',
     choices: ['밥 먹었어요', '내일이 기일이에요?', '동생 기억해요', '엄마 미안해요'],
-    responses: [
-      '밥은 먹었어? 얼굴이 왜 이렇게 상했어, 재희야.',
-      '내일이 무슨 날인지 기억하니? 아니야, 됐다.',
-      '엄마한텐 너밖에 없어. 그게 제일 무서운 말인 거 엄마도 알아.',
-    ]
   },
 ];
 
@@ -195,7 +185,7 @@ function triggerMsgLimit() {
 
   // 1.3초 후 치키 드로어 열기
   setTimeout(() => {
-    document.getElementById('chiki-bubble-text').textContent =
+    document.getElementById('chiki-popup-text').textContent =
       '대화를 충분히 나눴지? 이제 범인을 골라볼 차례야! 치키가 도와줄게~ 🐰✨';
     openChiki();
   }, 1300);
@@ -321,7 +311,7 @@ function switchNPC(idx) {
   }
 
   // 이름 / 서브 / 태그 업데이트
-  document.getElementById('header-npc-name').textContent = npc.name;
+  document.getElementById('header-npc-name').textContent = npc.displayName ?? npc.name;
   document.getElementById('header-npc-sub').textContent = npc.sub;
   const ht = document.getElementById('header-tag');
   ht.textContent = npc.tag;
@@ -549,7 +539,7 @@ function checkChikiTrigger(text) {
     if (trigger.words.some(w => text.includes(w))) {
       showChikiToast(trigger.toast || '🐰 치키가 반응했습니다…');
       setTimeout(() => {
-        document.getElementById('chiki-bubble-text').textContent = trigger.msg;
+        document.getElementById('chiki-popup-text').textContent = trigger.msg;
         openChiki();
         if (trigger.clue) addClue(trigger.clue);
       }, 1300);
@@ -597,13 +587,13 @@ function showChikiToast(msg) {
 //  치키 드로어
 // ─────────────────────────────────────────────
 function openChiki() {
-  document.getElementById('chiki-drawer').classList.add('open');
-  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('chiki-popup').classList.add('open');
+  document.getElementById('chiki-overlay').classList.add('show');
 }
 
 function closeChiki() {
-  document.getElementById('chiki-drawer').classList.remove('open');
-  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('chiki-popup').classList.remove('open');
+  document.getElementById('chiki-overlay').classList.remove('show');
 }
 
 // ─────────────────────────────────────────────
@@ -679,7 +669,7 @@ async function sendToBackend(text) {
 
         showChikiToast('🐰 이제 범인을 골라볼 시간이야~!');
         setTimeout(() => {
-          document.getElementById('chiki-bubble-text').textContent =
+          document.getElementById('chiki-popup-text').textContent =
             '대화를 충분히 나눴지? 이제 범인을 골라볼 차례야! 치키가 도와줄게~ 🐰✨';
           openChiki();
         }, 1300);

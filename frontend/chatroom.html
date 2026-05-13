@@ -125,7 +125,7 @@
         <div class="msg-row">
           <div class="msg-col">
             <div class="msg-name">엄마</div>
-            <div class="bubble">밥은 먹었어? 얼굴이 왜 이렇게 상했어, 재희야.</div>
+            <div class="bubble">밥은 먹었어? 얼굴이 왜 이렇게 상했어.</div>
             <div class="msg-meta"><span class="msg-time">21:05</span></div>
           </div>
         </div>
@@ -181,19 +181,20 @@
 <!-- ── 치키 토스트 ── -->
 <div id="chiki-toast">🐰 그 이름을 알고 있어…</div>
 
-<!-- ── 치키 드로어 ── -->
-<div id="drawer-overlay" onclick="closeChiki()"></div>
-<div id="chiki-drawer">
-  <div class="chiki-bg">
-    <img class="chiki-bg-img" src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595825/chat/%EC%B9%98%ED%82%A4/%EC%B9%98%ED%82%A4_%ED%94%84%EB%A1%9C%ED%95%84.png" alt="치키" onerror="this.style.display='none'">
-  </div>
-  <div class="chiki-content">
-    <div class="chiki-card">
-      <div class="chiki-card-text" id="chiki-bubble-text">
-        히히, 안녕! 내 소중한 친구! ✨ 방금 조금 무서운 꿈을 꾼 것 같지? 걱정 마, 내가 시간을 돌려서 널 다시 살려냈어! 이번엔 꼭 같이 살아남아 보자! 🐰🥕
-      </div>
+<!-- ── 치키 팝업 ── -->
+<div id="chiki-overlay" onclick="closeChiki()"></div>
+<div id="chiki-popup">
+  <!-- 토끼 이미지 (상자 없는 버전으로 교체 예정) -->
+  <img id="chiki-popup-rabbit"
+    src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778657520/chiki_chat_popup_kprntg.png"
+    alt="치키">
+  <!-- HTML로 만든 텍스트 박스 -->
+  <div id="chiki-popup-box">
+    <div id="chiki-popup-title">치키의 알림</div>
+    <div id="chiki-popup-inner">
+      <div id="chiki-popup-text"></div>
     </div>
-    <button id="chiki-close" onclick="closeChiki()">닫기</button>
+    <button id="chiki-popup-close" onclick="closeChiki()">닫기</button>
   </div>
 </div>
 
