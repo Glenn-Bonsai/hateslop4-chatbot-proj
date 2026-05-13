@@ -582,18 +582,29 @@ async function onChoice(choice, btn) {
 
 // 게임 시작 → session_id 발급
 async function startNewGame() {
+  // opening.js에서 이미 세션이 생성된 경우 재사용 (player_name 덮어쓰기 방지)
+  const existingSessionId = sessionStorage.getItem('session_id');
+  if (existingSessionId) {
+    GAME_STATE.sessionId = existingSessionId;
+    console.log('[기존 세션 재사용] session_id:', existingSessionId);
+    await fetchDisabledButtons();
+    return;
+  }
+
+  // opening을 거치지 않고 직접 진입한 경우 신규 세션 생성
   try {
+    const playerName   = sessionStorage.getItem('player_name')   || '플레이어';
+    const playerGender = sessionStorage.getItem('player_gender') || '미설정';
     const res = await fetch('/new-game', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ player_name: '플레이어', player_gender: '미설정' }),
+      body: JSON.stringify({ player_name: playerName, player_gender: playerGender }),
     });
     const data = await res.json();
     GAME_STATE.sessionId = data.session_id;
     sessionStorage.setItem('session_id', data.session_id);
     console.log('[새 게임] session_id:', data.session_id);
 
-    // 비활성화 버튼 목록 초기 조회 (루프 중복 방지)
     await fetchDisabledButtons();
   } catch (e) {
     console.warn('[백엔드 미연결] 오프라인 모드로 실행합니다.', e);
