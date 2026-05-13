@@ -7,27 +7,14 @@
 const BASE_URL = '';
 
 // ─────────────────────────────────────────────
-//  NPC 데이터
-//  TODO: 백엔드 연동 시 GET /npc-data 로 교체
+//  NPC 데이터 — 현재 차서연/엄마 쌍 구현
+//  다른 쌍으로 교체 시 이 배열만 수정하면 됨
 // ─────────────────────────────────────────────
 const NPCs = [
   {
-    id: 0, name: '김도현', sub: '34세 · 남성', tag: '내담자',
-    tagColor: '#6a7f99', avatarStyle: 'color:#6a7f99;',
-    profile: 'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595806/chat/%EA%B9%80%EB%8F%84%ED%98%84/%EA%B9%80%EB%8F%84%ED%98%84_%EA%B4%9C%EC%B0%AE%EC%9D%80%EB%93%AF%20%EC%9B%83%EC%9D%8C.png',
-    statLabel: '경계심', statVal: 72, statColor: '#c0392b',
-    choices: ['그 이름을 왜 묻습니까?', '이틀 전 일이요?', '기억하고 있습니다', '왜 화났어요?'],
-    responses: [
-      '선생님은 정말 기억이 안 나십니까?',
-      '그 이름을 왜 묻습니까? 선생님이 먼저 꺼낼 이름은 아닌 것 같은데요.',
-      '이번엔 안 그러려고 왔습니다. 그냥… 확인하고 싶었습니다.',
-    ]
-  },
-  {
-    id: 1, name: '차서연', sub: '32세 · 여성', tag: '신경과 의사',
-    tagColor: '#5a8870', avatarStyle: 'color:#5a8870;',
+    id: 0, name: '차서연', sub: '32세 · 여성', tag: '신경과 의사',
+    tagColor: '#5a8870',
     profile: 'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595780/chat/%EC%B0%A8%EC%84%9C%EC%97%B0/%EC%B0%A8%EC%84%9C%EC%97%B0_%ED%94%84%EB%A1%9C%ED%95%84.png',
-    statLabel: '의심도', statVal: 58, statColor: '#b07030',
     choices: ['커피 안 마실게요', '박주원 알아요?', '사무실 뒤진 거예요?', '패턴이 뭔가요?'],
     responses: [
       '패턴이 이상해요. 선생님 주변에서만 반복되는 이유가 있겠죠.',
@@ -36,10 +23,9 @@ const NPCs = [
     ]
   },
   {
-    id: 2, name: '엄마', sub: '61세 · 여성', tag: '가족',
-    tagColor: '#8a7040', avatarStyle: 'color:#8a7040;',
+    id: 1, name: '엄마', sub: '61세 · 여성', tag: '가족',
+    tagColor: '#8a7040',
     profile: 'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595815/chat/%EC%97%84%EB%A7%88/%EC%97%84%EB%A7%88_%ED%9B%84%ED%9B%97%20%EB%82%98%EB%8F%84%20%EB%AD%94%ED%91%9C%EC%A0%95%EC%9D%B8%EC%A7%80%EB%AA%B0%EB%9D%BC%20%ED%9B%84%ED%9B%97%20%EB%A8%B9%EA%B8%88.png',
-    statLabel: '집착도', statVal: 89, statColor: '#b07030',
     choices: ['밥 먹었어요', '내일이 기일이에요?', '동생 기억해요', '엄마 미안해요'],
     responses: [
       '밥은 먹었어? 얼굴이 왜 이렇게 상했어, 재희야.',
@@ -47,18 +33,6 @@ const NPCs = [
       '엄마한텐 너밖에 없어. 그게 제일 무서운 말인 거 엄마도 알아.',
     ]
   },
-  {
-    id: 3, name: '박도원', sub: '60세 · 남성', tag: '청소부',
-    tagColor: '#7a6a5a', avatarStyle: 'color:#7a6a5a;',
-    profile: 'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595793/chat/%EB%B0%95%EB%8F%84%EC%9B%90/%EB%B0%95%EB%8F%84%EC%9B%90_%ED%94%84%EB%A1%9C%ED%95%84.png',
-    statLabel: '수상함', statVal: 45, statColor: '#7a6a5a',
-    choices: ['누구세요?', '문 앞에 두세요', '딸이 있으세요?', '여기서 일한 지 얼마나 됐어요?'],
-    responses: [
-      '아이고, 선생님. 바닥에 유리 조각이 아직 남아 있네요.',
-      '우리 딸이 생각나서요. 혹시 이 얼굴, 어디서 익숙하지 않습니까?',
-      '아비는요, 자식이 남긴 글을 보면 압니다.',
-    ]
-  }
 ];
 
 // ─────────────────────────────────────────────
@@ -105,10 +79,12 @@ let isSwitchingNPC = false;
 let isDeadProcessing = false;
 let lastLoopCount = 0;
 
-// 대화 횟수 카운터
+// 대화 횟수 카운터 (NPC별 10회 × 2 = 통합 20회)
 let msgCount = 0;
 const MSG_LIMIT = 20;
-let isMsgLimitReached = false;   // 중복 실행 방지
+const NPC_HP_MAX = 10;
+let npcHp = [NPC_HP_MAX, NPC_HP_MAX]; // NPC별 잔여 대화 횟수
+let isMsgLimitReached = false;
 
 // ─────────────────────────────────────────────
 //  공통 API 헬퍼
@@ -188,15 +164,17 @@ function pad(n) { return String(n).padStart(2, '0'); }
 timerInterval = setInterval(updateTimer, 1000);
 
 // ─────────────────────────────────────────────
-//  ★ 대화 횟수 카운터 UI
+//  HP 생명바 UI — 현재 NPC의 잔여 대화 횟수
 // ─────────────────────────────────────────────
-function updateMsgCounter() {
-  const el = document.getElementById('msg-counter');
-  if (!el) return;
-  const remaining = Math.max(0, MSG_LIMIT - msgCount);
-  el.textContent = `${remaining}회 남음`;
-  if (remaining <= 5) el.style.color = '#c0392b';
-  else el.style.color = '';
+function updateHpBar() {
+  const fill = document.getElementById('hp-bar-fill');
+  if (!fill) return;
+  const hp = npcHp[currentNPC];
+  const pct = (hp / NPC_HP_MAX) * 100;
+  fill.style.width = pct + '%';
+  fill.classList.remove('warn', 'empty');
+  if (hp <= 0)      fill.classList.add('empty');
+  else if (hp <= 3) fill.classList.add('warn');
 }
 
 // ─────────────────────────────────────────────
@@ -233,40 +211,41 @@ function triggerMsgLimit() {
 }
 
 // ─────────────────────────────────────────────
-//  하단 탭 전환
+//  단서 패널 토글 (폴더 버튼)
 // ─────────────────────────────────────────────
+function toggleCluePanel() {
+  currentTab = currentTab === 'chat' ? 'clue' : 'chat';
+  switchTab(currentTab);
+}
+
 function switchTab(tab) {
   currentTab = tab;
 
   const chatScroll = document.getElementById('chat-scroll');
   const choicesArea = document.getElementById('choices-area');
-  const inputArea = document.getElementById('input-area');
   const cluePanel = document.getElementById('clue-panel');
-  const tabChat = document.getElementById('tab-chat');
-  const tabClue = document.getElementById('tab-clue');
-  const badge = document.getElementById('tab-clue-badge');
-  const npcTabs = document.getElementById('npc-tabs');
-  const header = document.getElementById('header');
+  const folderBtn = document.getElementById('folder-btn');
+  const folderBadge = document.getElementById('folder-badge');
+  const msgInput = document.getElementById('msg-input');
+  const sendBtn = document.getElementById('send-btn');
 
   if (tab === 'chat') {
     chatScroll.style.display = '';
     choicesArea.style.display = '';
-    inputArea.style.display = '';
-    npcTabs.style.display = '';
-    header.style.display = '';
     cluePanel.classList.remove('active');
-    tabChat.classList.add('active');
-    tabClue.classList.remove('active');
+    folderBtn.classList.remove('active');
+    if (!isMsgLimitReached) {
+      msgInput.disabled = false;
+      sendBtn.disabled = false;
+    }
   } else {
     chatScroll.style.display = 'none';
     choicesArea.style.display = 'none';
-    inputArea.style.display = 'none';
-    npcTabs.style.display = 'none';
-    header.style.display = 'none';
     cluePanel.classList.add('active');
-    tabChat.classList.remove('active');
-    tabClue.classList.add('active');
-    badge.style.display = 'none';
+    folderBtn.classList.add('active');
+    folderBadge.style.display = 'none';
+    msgInput.disabled = true;
+    sendBtn.disabled = true;
     renderClues();
   }
 }
@@ -277,8 +256,13 @@ function switchTab(tab) {
 function addClue(clue) {
   if (clues.some(c => c.title === clue.title)) return;
   clues.push({ ...clue, time: nowTime() });
+  // 단서 카운트 정보바 업데이트
+  const infoCount = document.getElementById('clue-info-count');
+  if (infoCount) infoCount.textContent = clues.length;
+  // 폴더 버튼 배지
   if (currentTab !== 'clue') {
-    document.getElementById('tab-clue-badge').style.display = '';
+    const badge = document.getElementById('folder-badge');
+    if (badge) badge.style.display = '';
   }
   if (currentTab === 'clue') renderClues();
 }
@@ -314,49 +298,64 @@ function renderClues() {
 }
 
 // ─────────────────────────────────────────────
-//  NPC 전환
+//  NPC 전환 (switch 버튼: 현재↔상대 토글)
 // ─────────────────────────────────────────────
+function switchNPCToggle() {
+  if (isSwitchingNPC || isSending || isMsgLimitReached) return;
+  switchNPC(currentNPC === 0 ? 1 : 0);
+}
+
 function switchNPC(idx) {
   isSwitchingNPC = true;
   currentNPC = idx;
   responseIdx = 0;
 
-  document.querySelectorAll('.npc-tab').forEach((t, i) => {
-    t.classList.toggle('active', i === idx);
-
-    // ★ NPC 탭 아바타 이미지 교체
-    const npcData = NPCs[i];
-    const avatarEl = t.querySelector('.npc-tab-avatar');
-    if (avatarEl) {
-      avatarEl.innerHTML = `
-        <img src="${npcData.profile}" alt="${npcData.initials}"
-             style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
-             onerror="this.style.display='none';this.insertAdjacentText('afterend','${npcData.initials}')">
-      `;
-      avatarEl.style.cssText = '';  // 기존 텍스트 색상 인라인 스타일 제거
-    }
-  });
-
   const npc = NPCs[idx];
+  const otherNpc = NPCs[1 - idx]; // 상대 NPC
 
-  const headerImg = document.getElementById('header-profile-img');
-  if (headerImg) {
-    headerImg.src = npc.profile;
-    headerImg.alt = npc.name;
+  // 포트레이트 이미지 업데이트
+  const portraitImg = document.getElementById('header-portrait-img');
+  if (portraitImg) {
+    portraitImg.src = npc.profile;
+    portraitImg.alt = npc.name;
   }
 
+  // 이름 / 서브 / 태그 업데이트
   document.getElementById('header-npc-name').textContent = npc.name;
   document.getElementById('header-npc-sub').textContent = npc.sub;
-
   const ht = document.getElementById('header-tag');
   ht.textContent = npc.tag;
   ht.style.color = npc.tagColor;
   ht.style.borderColor = npc.tagColor + '44';
   ht.style.background = npc.tagColor + '14';
 
+  // 전환 버튼: 상대 NPC 아바타 표시
+  const switchImg = document.getElementById('switch-avatar-img');
+  if (switchImg) {
+    switchImg.src = otherNpc.profile;
+    switchImg.alt = otherNpc.name;
+  }
+
+  // 채팅창 전환
   for (let i = 0; i < NPCs.length; i++) {
     const el = document.getElementById(`chat-npc-${i}`);
     if (el) el.style.display = (i === idx) ? 'block' : 'none';
+  }
+
+  // HP바 업데이트
+  updateHpBar();
+
+  // 현재 NPC HP 소진 시 입력 비활성
+  const input = document.getElementById('msg-input');
+  const sendBtn = document.getElementById('send-btn');
+  if (npcHp[idx] <= 0 || isMsgLimitReached) {
+    if (input) input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+  } else {
+    if (!isMsgLimitReached && currentTab === 'chat') {
+      if (input) input.disabled = false;
+      if (sendBtn) sendBtn.disabled = false;
+    }
   }
 
   renderChoices(npc.choices);
@@ -451,9 +450,18 @@ function sendMsg() {
   // 전송 후 추천 문구 → 원래 선택지 복원
   renderChoices(NPCs[currentNPC].choices);
 
-  // 대화 횟수 증가 & 표시
+  // 대화 횟수 증가 & HP 감소
   msgCount++;
-  updateMsgCounter();
+  npcHp[currentNPC] = Math.max(0, npcHp[currentNPC] - 1);
+  updateHpBar();
+
+  // 현재 NPC HP 소진 시 입력 비활성 (전환은 가능)
+  if (npcHp[currentNPC] <= 0 && !isMsgLimitReached) {
+    const input = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
+    if (input) input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+  }
 
   checkChikiTrigger(text);
   addPlayerMsg(text);
@@ -487,10 +495,6 @@ function appendTypingRow() {
   row.className = 'msg-row';
   row.id = 'typing-row';
   row.innerHTML = `
-    <div class="npc-avatar">
-      <img src="${npc.profile}"
-           alt="${npc.name}">
-    </div>
     <div class="msg-col">
       <div class="msg-name">${npc.name}</div>
       <div class="typing-bubble">
@@ -511,10 +515,6 @@ function addNPCMsg(overrideText = null) {
   const row = document.createElement('div');
   row.className = 'msg-row';
   row.innerHTML = `
-    <div class="npc-avatar" id="npc-avatar-${Date.now()}">
-      <img src="${npc.profile}"
-           alt="${npc.name}">
-    </div>
     <div class="msg-col">
       <div class="msg-name">${npc.name}</div>
       <div class="bubble">${esc(text)}</div>
@@ -526,23 +526,17 @@ function addNPCMsg(overrideText = null) {
   checkClueTrigger(npc.name, text);
 }
 
+// NPC 표정 이미지 → 상단 헤더 포트레이트 업데이트
 function renderNPCImage(url, npcIdx = currentNPC) {
-  // npcIdx: 메시지를 전송한 시점의 NPC 인덱스를 고정해서 받음
-  // currentNPC를 직접 쓰면 NPC 전환 후 엉뚱한 채팅 영역을 가리킬 수 있음
-  const chat = document.getElementById(`chat-npc-${npcIdx}`);
-  if (!chat) return;
-  // 가장 마지막 NPC 말풍선 행의 아바타 이미지를 교체
-  const rows = chat.querySelectorAll('.msg-row:not(.player)');
-  const lastRow = rows[rows.length - 1];
-  if (!lastRow) return;
-  const avatarImg = lastRow.querySelector('.npc-avatar img');
-  if (!avatarImg) return;
+  if (npcIdx !== currentNPC) return; // 전환된 상태면 무시
+  const portrait = document.getElementById('header-portrait-img');
+  if (!portrait) return;
   const fullUrl = url.startsWith('http') ? url : `/static/images/${url}`;
-  avatarImg.style.opacity = '0';
+  portrait.style.opacity = '0';
   setTimeout(() => {
-    avatarImg.src = fullUrl;
-    avatarImg.onload = () => { avatarImg.style.opacity = '1'; };
-    avatarImg.onerror = () => { avatarImg.style.opacity = '1'; }; // 실패해도 원복
+    portrait.src = fullUrl;
+    portrait.onload = () => { portrait.style.opacity = '1'; };
+    portrait.onerror = () => { portrait.style.opacity = '1'; };
   }, 150);
 }
 
@@ -644,6 +638,8 @@ async function sendToBackend(text) {
   isSending = true;
   input.disabled = true;
   sendBtn.disabled = true;
+  const switchBtn = document.getElementById('npc-switch-btn');
+  if (switchBtn) switchBtn.disabled = true;
 
   appendTypingRow();
 
@@ -719,8 +715,9 @@ async function sendToBackend(text) {
     addNPCMsg();
   } finally {
     isSending = false;
-    // 메시지 한도 도달 시 입력창 비활성 유지
-    if (!isMsgLimitReached) {
+    if (switchBtn) switchBtn.disabled = false;
+    // 메시지 한도 도달 또는 현재 NPC HP 소진 시 입력창 비활성 유지
+    if (!isMsgLimitReached && npcHp[currentNPC] > 0) {
       input.disabled = false;
       sendBtn.disabled = false;
       input.focus();
@@ -758,9 +755,6 @@ function esc(s) {
 document.getElementById('msg-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') sendMsg();
 });
-
-document.getElementById('tab-chat').addEventListener('click', () => switchTab('chat'));
-document.getElementById('tab-clue').addEventListener('click', () => switchTab('clue'));
 
 
 // ─────────────────────────────────────────────
@@ -848,7 +842,7 @@ document.getElementById('sound-toggle').addEventListener('click', (e) => {
 
   await loadTriggers();
   switchNPC(0);
-  updateMsgCounter();
+  updateHpBar();
   scrollToBottom();
 
   // 입력창 키워드 기반 추천 문구 필터링
