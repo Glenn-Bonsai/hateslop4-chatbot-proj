@@ -10,15 +10,18 @@
 <body>
 <div id="app">
 
-  <!-- ── 정보 바 (최상단 상태바) ── -->
+  <!-- ── 정보 바 (루프 → 시간 → 단서 → HP 순) ── -->
   <div id="info-bar">
+    <!-- Cell 1: 루프 -->
     <div class="info-cell">
       <div class="info-label">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
-        장소
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8 8 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8 8 0 01-15.357-2m15.357 2H15"/></svg>
+        루프
       </div>
-      <div class="info-value" style="font-size:9px;line-height:1.35;">안식 정신건강의학과</div>
+      <div class="info-value">LOOP <span id="loop-num">1</span></div>
     </div>
+
+    <!-- Cell 2: 남은시간 -->
     <div class="info-cell">
       <div class="info-label">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -26,186 +29,133 @@
       </div>
       <div id="timer-display">--:--:--</div>
     </div>
+
+    <!-- Cell 3: 단서 카운트 -->
     <div class="info-cell">
       <div class="info-label">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8 8 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8 8 0 01-15.357-2m15.357 2H15"/></svg>
-        루프
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+        단서
       </div>
-      <div class="info-value">LOOP <span id="loop-num">1</span> · <span id="loop-count">1</span>회</div>
+      <div class="info-value" id="clue-info-count">0</div>
     </div>
 
-    <div class="info-cell" id="sound-toggle" style="cursor:pointer; display:flex; align-items:center; justify-content:center;">
-      <svg id="sound-icon-on" style="width:20px; height:20px; color:#c8ccca;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-      </svg>
-      <svg id="sound-icon-off" style="width:20px; height:20px; color:#7a807d; display:none;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-      </svg>
-    </div>
-
-  </div>
-
-  <!-- ── NPC 탭 — 채팅 상대 선택 탭 ── -->
-  <div id="npc-tabs">
-    <button class="npc-tab active" onclick="switchNPC(0)">
-      <div class="npc-tab-name">김도현</div>
-    </button>
-    <button class="npc-tab" onclick="switchNPC(1)">
-      <div class="npc-tab-name">차서연</div>
-    </button>
-    <button class="npc-tab" onclick="switchNPC(2)">
-      <div class="npc-tab-name">엄마</div>
-    </button>
-    <button class="npc-tab" onclick="switchNPC(3)">
-      <div class="npc-tab-name">박도원</div>
-    </button>
-  </div>
-
-  <!-- ── 헤더 — 채팅 상대 프로필바 ── -->
-  <div id="header">
-    <div class="header-npc">
-      <div class="header-avatar" id="header-avatar">
-        <img id="header-profile-img"
-        src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595803/chat/%EA%B9%80%EB%8F%84%ED%98%84/%EA%B9%80%EB%8F%84%ED%98%84_%ED%94%84%EB%A1%9C%ED%95%84.png"
-        alt="도현"
-        onerror="this.style.display='none'">
-        <div class="header-status-dot"></div>
+    <!-- Cell 4: HP 생명바 (NPC별 10턴) -->
+    <div class="info-cell">
+      <div class="info-label">
+        <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        HP
       </div>
-      
-      <div class="header-npc-info">
-        <div class="header-npc-name" id="header-npc-name">김도현</div>
-        <div class="header-npc-row2">
-          <span class="header-npc-sub" id="header-npc-sub">34세 · 남성</span>
-          <span class="header-tag" id="header-tag" style="color:#6a7f99;border-color:rgba(106,127,153,.3);background:rgba(106,127,153,.1);">내담자</span>
+      <div class="hp-bar-wrap">
+        <div class="hp-bar-track">
+          <div class="hp-bar-fill" id="hp-bar-fill"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── 헤더 — 포트레이트(좌) + NPC정보(우) ── -->
+  <div id="header">
+    <!-- 대형 포트레이트 이미지 (좌측) -->
+    <div class="header-portrait-wrap">
+      <img id="header-portrait-img"
+        src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595780/chat/%EC%B0%A8%EC%84%9C%EC%97%B0/%EC%B0%A8%EC%84%9C%EC%97%B0_%ED%94%84%EB%A1%9C%ED%95%84.png"
+        alt="차서연"
+        onerror="this.style.display='none'">
+    </div>
+
+    <!-- NPC 정보 + 컨트롤 (우측) -->
+    <div class="header-info-col">
+      <!-- 이름 행: 이름 + BGM 버튼 -->
+      <div class="header-name-row">
+        <div class="header-npc-name" id="header-npc-name">차서연</div>
+        <div id="sound-toggle" class="header-sound-btn" style="cursor:pointer;">
+          <svg id="sound-icon-on" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          </svg>
+          <svg id="sound-icon-off" style="display:none;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- NPC 서브 정보 -->
+      <div class="header-npc-row2">
+        <span class="header-npc-sub" id="header-npc-sub">32세 · 여성</span>
+        <span class="header-tag" id="header-tag">신경과 의사</span>
+      </div>
+
+      <!-- 캐릭터 전환 버튼 (우측 하단) -->
+      <button class="npc-switch-btn" id="npc-switch-btn" onclick="switchNPCToggle()">
+        <img id="switch-avatar-img"
+          src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595815/chat/%EC%97%84%EB%A7%88/%EC%97%84%EB%A7%88_%ED%9B%84%ED%9B%97%20%EB%82%98%EB%8F%84%20%EB%AD%94%ED%91%9C%EC%A0%95%EC%9D%B8%EC%A7%80%EB%AA%B0%EB%9D%BC%20%ED%9B%84%ED%9B%97%20%EB%A8%B9%EA%B8%88.png"
+          alt="엄마"
+          onerror="this.style.display='none'">
+        <div class="switch-status-dot"></div>
+      </button>
     </div>
   </div>
 
   <!-- ── 콘텐츠 영역 (chat-scroll / clue-panel 공유) ── -->
   <div id="content-area">
 
-  <!-- ── 채팅 스크롤 ── -->
-  <div id="chat-scroll">
+    <!-- ── 채팅 스크롤 ── -->
+    <div id="chat-scroll">
 
-    <!-- NPC별 채팅창 (JS가 display 전환) -->
-    <div class="chat-messages" id="chat-npc-0">
-      <div class="msg-row">
-        <div class="npc-avatar">
-          <img src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595806/chat/%EA%B9%80%EB%8F%84%ED%98%84/%EA%B9%80%EB%8F%84%ED%98%84_%EA%B4%9C%EC%B0%AE%EC%9D%80%EB%93%AF%20%EC%9B%83%EC%9D%8C.png" alt="도현" onerror="this.style.display='none'">
+      <!-- NPC 0: 차서연 채팅창 -->
+      <div class="chat-messages" id="chat-npc-0">
+        <div class="msg-row">
+          <div class="msg-col">
+            <div class="msg-name">차서연</div>
+            <div class="bubble">김도현 환자 오늘 진료 있는 거 잊었어요? 지금 화난 상태로 기다리고 있어요.</div>
+            <div class="msg-meta"><span class="msg-time">21:08</span></div>
+          </div>
         </div>
-        <div class="msg-col">
-          <div class="msg-name">김도현</div>
-          <div class="bubble">선생님은… 정말 기억이 안 나십니까.</div>
-          <div class="msg-meta"><span class="msg-time">21:10</span></div>
-        </div>
-      </div>
-      <div class="msg-row">
-        <div class="npc-avatar">
-          <img src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595806/chat/%EA%B9%80%EB%8F%84%ED%98%84/%EA%B9%80%EB%8F%84%ED%98%84_%EA%B4%9C%EC%B0%AE%EC%9D%80%EB%93%AF%20%EC%9B%83%EC%9D%8C.png" alt="도현" onerror="this.style.display='none'">
-        </div>
-        <div class="msg-col">
-          <div class="msg-name">김도현</div>
-          <div class="bubble">모르는 척하는 건지, 정말 모르는 건지… 그게 제일 궁금했습니다.</div>
-          <div class="msg-meta"><span class="msg-time">21:11</span></div>
+        <div class="msg-row">
+          <div class="msg-col">
+            <div class="msg-name">차서연</div>
+            <div class="bubble">커피 드실래요? 오늘 상태 안 좋아 보여서요.</div>
+            <div class="msg-meta"><span class="msg-time">21:09</span></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="chat-messages" id="chat-npc-1" style="display:none;">
-      <div class="msg-row">
-        <div class="npc-avatar">
-          <img src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595780/chat/%EC%B0%A8%EC%84%9C%EC%97%B0/%EC%B0%A8%EC%84%9C%EC%97%B0_%ED%94%84%EB%A1%9C%ED%95%84.png" alt="서연" onerror="this.style.display='none'">
+      <!-- NPC 1: 엄마 채팅창 -->
+      <div class="chat-messages" id="chat-npc-1" style="display:none;">
+        <div class="msg-row">
+          <div class="msg-col">
+            <div class="msg-name">엄마</div>
+            <div class="bubble">밥은 먹었어? 얼굴이 왜 이렇게 상했어, 재희야.</div>
+            <div class="msg-meta"><span class="msg-time">21:05</span></div>
+          </div>
         </div>
-        <div class="msg-col">
-          <div class="msg-name">차서연</div>
-          <div class="bubble">김도현 환자 오늘 진료 있는 거 잊었어요? 지금 화난 상태로 기다리고 있어요.</div>
-          <div class="msg-meta"><span class="msg-time">21:08</span></div>
-        </div>
-      </div>
-      <div class="msg-row">
-        <div class="npc-avatar">
-          <img src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595780/chat/%EC%B0%A8%EC%84%9C%EC%97%B0/%EC%B0%A8%EC%84%9C%EC%97%B0_%ED%94%84%EB%A1%9C%ED%95%84.png" alt="서연" onerror="this.style.display='none'">
-        </div>
-        <div class="msg-col">
-          <div class="msg-name">차서연</div>
-          <div class="bubble">커피 드실래요? 오늘 상태 안 좋아 보여서요.</div>
-          <div class="msg-meta"><span class="msg-time">21:09</span></div>
+        <div class="msg-row">
+          <div class="msg-col">
+            <div class="msg-name">엄마</div>
+            <div class="bubble">내일이 무슨 날인지 기억하니? 아니야, 됐다.</div>
+            <div class="msg-meta"><span class="msg-time">21:06</span></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="chat-messages" id="chat-npc-2" style="display:none;">
-      <div class="msg-row">
-        <div class="npc-avatar">
-          <img src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595815/chat/%EC%97%84%EB%A7%88/%EC%97%84%EB%A7%88_%ED%9B%84%ED%9B%97%20%EB%82%98%EB%8F%84%20%EB%AD%94%ED%91%9C%EC%A0%95%EC%9D%B8%EC%A7%80%EB%AA%B0%EB%9D%BC%20%ED%9B%84%ED%9B%97%20%EB%A8%B9%EA%B8%88.png" alt="엄마" onerror="this.style.display='none'">
-        </div>
-        <div class="msg-col">
-          <div class="msg-name">엄마</div>
-          <div class="bubble">밥은 먹었어? 얼굴이 왜 이렇게 상했어, 재희야.</div>
-          <div class="msg-meta"><span class="msg-time">21:05</span></div>
-        </div>
-      </div>
-      <div class="msg-row">
-        <div class="npc-avatar">
-          <img src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595815/chat/%EC%97%84%EB%A7%88/%EC%97%84%EB%A7%88_%ED%9B%84%ED%9B%97%20%EB%82%98%EB%8F%84%20%EB%AD%94%ED%91%9C%EC%A0%95%EC%9D%B8%EC%A7%80%EB%AA%B0%EB%9D%BC%20%ED%9B%84%ED%9B%97%20%EB%A8%B9%EA%B8%88.png" alt="엄마" onerror="this.style.display='none'">
-        </div>
-        <div class="msg-col">
-          <div class="msg-name">엄마</div>
-          <div class="bubble">내일이 무슨 날인지 기억하니? 아니야, 됐다.</div>
-          <div class="msg-meta"><span class="msg-time">21:06</span></div>
-        </div>
-      </div>
-    </div>
+    </div><!-- /#chat-scroll -->
 
-    <div class="chat-messages" id="chat-npc-3" style="display:none;">
-      <div class="msg-row">
-        <div class="npc-avatar">
-          <img src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595793/chat/%EB%B0%95%EB%8F%84%EC%9B%90/%EB%B0%95%EB%8F%84%EC%9B%90_%ED%94%84%EB%A1%9C%ED%95%84.png" alt="도원" onerror="this.style.display='none'">
+    <!-- ── 단서 패널 ── -->
+    <div id="clue-panel">
+      <div class="clue-panel-header">
+        <div class="clue-panel-title">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+          수집된 단서
         </div>
-        <div class="msg-col">
-          <div class="msg-name">박도원</div>
-          <div class="bubble">선생님, 문 앞에 택배 두고 가겠습니다.</div>
-          <div class="msg-meta"><span class="msg-time">21:12</span></div>
-        </div>
+        <div class="clue-panel-count"><span id="clue-count">0</span>개</div>
       </div>
-      <div class="msg-row player">
-        <div class="msg-col">
-          <div class="bubble">누구세요?</div>
-          <div class="msg-meta" style="justify-content:flex-end;"><span class="msg-read">읽음</span><span class="msg-time">21:13</span></div>
+      <div id="clue-list">
+        <div class="clue-empty">
+          <div class="clue-empty-icon">🐰</div>
+          <div class="clue-empty-text">치키가 알려준 단서가<br>여기에 기록됩니다.</div>
         </div>
       </div>
-      <div class="msg-row">
-        <div class="npc-avatar">
-          <img src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595793/chat/%EB%B0%95%EB%8F%84%EC%9B%90/%EB%B0%95%EB%8F%84%EC%9B%90_%ED%94%84%EB%A1%9C%ED%95%84.png" alt="도원" onerror="this.style.display='none'">
-        </div>
-        <div class="msg-col">
-          <div class="msg-name">박도원</div>
-          <div class="bubble">저 기억 안 나십니까?</div>
-          <div class="msg-meta"><span class="msg-time">21:13</span></div>
-        </div>
-      </div>
-      <div class="clue-update-msg"><span>📋 [단서 업데이트] 현관 앞 발자국 소리</span></div>
-    </div>
-  </div>
-
-  <!-- ── 단서 패널 ── -->
-  <div id="clue-panel">
-    <div class="clue-panel-header">
-      <div class="clue-panel-title">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-        수집된 단서
-      </div>
-      <div class="clue-panel-count"><span id="clue-count">0</span>개</div>
-    </div>
-    <div id="clue-list">
-      <div class="clue-empty">
-        <div class="clue-empty-icon">🐰</div>
-        <div class="clue-empty-text">치키가 알려준 단서가<br>여기에 기록됩니다.</div>
-      </div>
-    </div>
-  </div><!-- /#clue-panel -->
+    </div><!-- /#clue-panel -->
 
   </div><!-- /#content-area -->
 
@@ -214,22 +164,17 @@
 
   <!-- ── 입력창 ── -->
   <div id="input-area">
+    <!-- 단서 폴더 버튼 (좌측 하단) -->
+    <button id="folder-btn" onclick="toggleCluePanel()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+      </svg>
+      <span class="folder-badge" id="folder-badge" style="display:none;"></span>
+    </button>
+
     <input id="msg-input" type="text" placeholder="메시지를 입력하세요…" />
     <button id="send-btn" onclick="sendMsg()">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-    </button>
-  </div>
-
-  <!-- ── 하단 탭 ── -->
-  <div id="bottom-tab">
-    <button class="tab-item active" id="tab-chat">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-      <span>채팅</span>
-    </button>
-    <button class="tab-item" id="tab-clue">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-      <span>단서</span>
-      <span class="tab-badge" id="tab-clue-badge" style="display:none;"></span>
     </button>
   </div>
 
@@ -240,7 +185,6 @@
 <div id="drawer-overlay" onclick="closeChiki()"></div>
 <div id="chiki-drawer">
   <div class="chiki-bg">
-    <!-- 기존 base64 데이터를 삭제하고 요청하신 경로로 교체했습니다. -->
     <img class="chiki-bg-img" src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778595825/chat/%EC%B9%98%ED%82%A4/%EC%B9%98%ED%82%A4_%ED%94%84%EB%A1%9C%ED%95%84.png" alt="치키" onerror="this.style.display='none'">
   </div>
   <div class="chiki-content">

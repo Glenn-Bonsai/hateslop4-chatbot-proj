@@ -64,73 +64,94 @@ html, body {
   );
 }
 
-/* ── 헤더 — 채팅 상대 프로필바 ── */
+/* ── 헤더 — 포트레이트(좌) + NPC정보(우) ── */
 #header {
   position:relative; z-index:10; flex-shrink:0;
+  height:200px;
   background:var(--bg-surface);
   border-bottom:1px solid var(--border-warm);
-  padding:10px 14px;
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
-}
-.header-npc { display:flex; align-items:center; gap:9px; flex:1; min-width:0; }
-.header-avatar {
-  width:42px; height:42px; border-radius:50%; flex-shrink:0;
-  background:var(--bg-surface2); border:1px solid var(--border-accent);
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700; color:var(--text-secondary);
-  position:relative;
   overflow:hidden;
+  display:flex; flex-direction:row;
 }
-.header-avatar img {
+
+/* 대형 포트레이트 (좌측) */
+.header-portrait-wrap {
+  width:145px; flex-shrink:0;
+  position:relative; overflow:hidden;
+}
+.header-portrait-wrap::after {
+  content:''; position:absolute; right:0; top:0; bottom:0; width:40%;
+  background:linear-gradient(to right, transparent, var(--bg-surface));
+  z-index:1; pointer-events:none;
+}
+#header-portrait-img {
+  width:100%; height:100%;
+  object-fit:cover; object-position:center top;
+  display:block;
+  transition:opacity 0.3s ease;
+}
+
+/* NPC 정보 + 컨트롤 (우측) */
+.header-info-col {
+  flex:1; display:flex; flex-direction:column;
+  padding:14px 12px 12px;
+  gap:5px; position:relative;
+}
+
+/* 이름 행: 이름 왼쪽 + BGM 버튼 오른쪽 */
+.header-name-row {
+  display:flex; align-items:center; justify-content:space-between;
+}
+.header-npc-name {
+  font-size:18px; font-weight:700; color:var(--text-primary);
+}
+.header-npc-row2 { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.header-npc-sub  { font-size:10px; color:var(--text-secondary); }
+.header-tag {
+  font-size:9px; font-family:var(--font-mono); font-weight:500;
+  padding:2px 6px; border-radius:2px; border:1px solid; flex-shrink:0;
+}
+
+/* BGM 버튼 (이름 행 우측) */
+.header-sound-btn {
+  background:rgba(255,255,255,0.05); border:1px solid var(--border);
+  border-radius:4px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  width:30px; height:30px; flex-shrink:0;
+}
+.header-sound-btn svg { width:16px; height:16px; color:rgba(200,204,202,0.6); }
+.header-sound-btn:active { border-color:var(--border-accent); }
+
+/* 캐릭터 전환 버튼 (우측 하단) */
+.npc-switch-btn {
+  position:absolute; bottom:12px; right:12px; z-index:4;
+  width:48px; height:48px; border-radius:50%;
+  overflow:hidden; cursor:pointer;
+  border:2px solid var(--border-accent);
+  background:var(--bg-surface2);
+  padding:0;
+  box-shadow:0 0 10px rgba(192,57,43,0.3);
+  transition:opacity 0.2s, box-shadow 0.2s;
+}
+.npc-switch-btn:disabled {
+  opacity:0.35; cursor:not-allowed; box-shadow:none;
+}
+.npc-switch-btn img {
   width:100%; height:100%; object-fit:cover; object-position:center top;
   display:block;
 }
-.header-status-dot {
-  width:8px; height:8px; border-radius:50%;
-  background:var(--accent); border:2px solid var(--bg-header);
-  position:absolute; bottom:-2px; right:-2px;
-  box-shadow:0 0 5px rgba(192,57,43,.8);
+.switch-status-dot {
+  position:absolute; bottom:2px; right:2px;
+  width:10px; height:10px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--bg-surface);
+  box-shadow:0 0 6px rgba(192,57,43,0.9);
   animation:dotPulse 2s ease-in-out infinite;
 }
 @keyframes dotPulse {
   0%,100%{ box-shadow:0 0 5px rgba(192,57,43,.8); }
-  50%{     box-shadow:0 0 10px rgba(192,57,43,1); }
-}
-.header-npc-info { display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; }
-.header-npc-name { font-size:14px; font-weight:700; color:var(--text-primary); }
-.header-npc-row2 { display:flex; align-items:center; gap:6px; }
-.header-npc-sub  { font-size:10px; color:var(--text-secondary); }
-.header-tag {
-  font-size:9px; font-family:var(--font-mono); font-weight:500;
-  padding:1px 5px; border-radius:2px; border:1px solid; flex-shrink:0;
+  50%{     box-shadow:0 0 12px rgba(192,57,43,1); }
 }
 
-/* 스탯 게이지 */
-.header-stat {
-  display:flex; align-items:center; gap:5px; margin-top:1px;
-}
-.header-stat-label   { font-size:8px; color:var(--text-dim); font-family:var(--font-mono); letter-spacing:.4px; flex-shrink:0; }
-.header-stat-bar-wrap{ width:56px; height:2px; background:var(--bg-surface3); border-radius:1px; overflow:hidden; flex-shrink:0; }
-.header-stat-bar     { height:100%; border-radius:1px; transition:width .5s ease; }
-.header-stat-val     { font-size:8px; color:var(--text-dim); font-family:var(--font-mono); flex-shrink:0; }
-
-/* 우측 루프+타이머 */
-.header-right-block {
-  display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;
-}
-.header-loop {
-  font-family:var(--font-mono); font-size:10px; color:var(--text-secondary);
-  letter-spacing:1px; border:1px solid var(--border); padding:2px 6px; border-radius:2px;
-}
-#timer {
-  font-family:var(--font-mono); font-size:15px; letter-spacing:2px;
-  color:var(--text-primary);
-}
-#timer.warning {
-  color:var(--accent);
-  animation:timerPulse 1s ease-in-out infinite;
-  text-shadow:0 0 8px rgba(192,57,43,.6);
-}
 @keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:.45} }
 
 /* ── 정보 바 (최상단 상태바) ── */
@@ -151,32 +172,24 @@ html, body {
 }
 #timer-display.critical { animation:timerPulse .6s ease-in-out infinite; }
 
-/* ── NPC 탭 — 채팅 상대 선택 탭 ── */
-#npc-tabs {
-  position:relative; z-index:10; flex-shrink:0;
-  background:var(--bg-tabbar);
-  border-bottom:2px solid var(--border-warm);
-  display:flex; overflow-x:auto;
+/* HP 생명바 */
+.hp-bar-wrap { display:flex; align-items:center; height:16px; }
+.hp-bar-track {
+  width:75px; height:7px;
+  background:rgba(255,255,255,0.07);
+  border-radius:2px; overflow:hidden;
 }
-#npc-tabs::-webkit-scrollbar { display:none; }
-.npc-tab {
-  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
-  padding:7px 4px 6px; cursor:pointer; border:none; background:none;
-  border-bottom:2px solid transparent;
-  margin-bottom:-2px;
-  transition:border-color .15s, background .15s; min-height:44px;
+.hp-bar-fill {
+  height:100%; border-radius:2px;
+  background:var(--accent);
+  width:100%;
+  transition:width 0.5s ease, background 0.3s ease;
 }
-.npc-tab:active          { background:rgba(192,57,43,.05); }
-.npc-tab.active          { border-bottom-color:var(--accent); background:rgba(192,57,43,.04); }
-.npc-tab-avatar {
-  width:26px; height:26px; border-radius:50%;
-  background:var(--bg-surface2); border:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
-  font-size:9px; font-weight:700; color:#7a7470;
-}
-.npc-tab.active .npc-tab-avatar { border-color:var(--border-accent); color:var(--accent); }
-.npc-tab-name            { font-size:10px; color:#b0aaa4; font-weight:500; }
-.npc-tab.active .npc-tab-name { color:var(--accent); font-weight:700; }
+.hp-bar-fill.warn  { background:#e07030; }
+.hp-bar-fill.empty { background:#4a1010; }
+
+/* ── NPC 탭 — 제거됨 (display:none) ── */
+#npc-tabs { display:none; }
 
 /* ── 콘텐츠 영역 래퍼 ── */
 #content-area {
@@ -237,24 +250,9 @@ html, body {
 /* 말풍선 행 */
 .msg-row        { display:flex; align-items:flex-start; gap:7px; margin-bottom:9px; }
 .msg-row.player { flex-direction:row-reverse; }
-.npc-avatar {
-  width:80px; height:100px; /* 4:5 비율, 약 2배 크기 */
-  border-radius:6px; flex-shrink:0;
-  background:var(--bg-surface2); border:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
-  font-size:10px; font-weight:700; overflow:hidden;
-  align-self: flex-start;
-  transition: opacity 0.2s ease;
-}
-.npc-avatar img {
-  width:100%; height:100%; object-fit:cover; object-position:center top;
-  display:block;
-  transition: opacity 0.3s ease;
 
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  transform: translateZ(0);
-}
+/* 인물 아바타 — 메시지 행에서 제거됨 (상단 헤더로 이동) */
+.npc-avatar { display:none; }
 .player-avatar {
   width:32px; height:32px; border-radius:50%; flex-shrink:0;
   background:var(--bg-surface2); border:1px solid var(--border);
@@ -346,14 +344,30 @@ html, body {
   padding:9px 12px calc(9px + env(safe-area-inset-bottom));
   display:flex; align-items:center; gap:7px;
 }
-#input-plus {
+
+/* 폴더(단서) 버튼 — 좌측 */
+#folder-btn {
   width:40px; height:40px; border-radius:3px; flex-shrink:0;
   background:var(--bg-surface2); border:1px solid var(--border-warm);
   display:flex; align-items:center; justify-content:center;
   cursor:pointer; color:var(--text-secondary);
+  position:relative;
+  transition:border-color .15s, background .15s;
 }
-#input-plus:active { border-color:var(--border-accent); }
-#input-plus svg    { width:16px; height:16px; }
+#folder-btn:active { border-color:var(--border-accent); }
+#folder-btn svg    { width:18px; height:18px; }
+#folder-btn.active {
+  border-color:var(--border-accent);
+  background:rgba(192,57,43,0.08);
+  color:var(--accent);
+}
+.folder-badge {
+  position:absolute; top:5px; right:5px;
+  width:6px; height:6px; border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 4px rgba(192,57,43,.8);
+  animation:dotPulse 2s ease-in-out infinite;
+}
 #msg-input {
   flex:1; background:var(--bg-surface2);
   border:1px solid var(--border-warm); border-radius:3px;
@@ -371,32 +385,8 @@ html, body {
 #send-btn:active  { opacity:.8; transform:scale(.95); }
 #send-btn svg     { width:16px; height:16px; color:#f0e0d8; }
 
-/* ── 하단 탭 ── */
-#bottom-tab {
-  position:relative; z-index:10; flex-shrink:0;
-  background:var(--bg-tabbar); border-top:1px solid var(--border-warm);
-  display:flex; padding-bottom:env(safe-area-inset-bottom);
-}
-.tab-item {
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  padding:9px 0 7px; gap:3px; border:none; background:none;
-  font-family:var(--font-main); cursor:pointer; min-height:44px;
-  position:relative;
-}
-.tab-item svg          { width:20px; height:20px; }
-.tab-item span         { font-size:9px; font-weight:500; }
-.tab-item.active       { color:var(--accent); }
-.tab-item:not(.active) { color:var(--text-dim); }
-
-/* 탭 뱃지 (새 단서 알림) */
-.tab-badge {
-  position:absolute; top:7px; right:calc(50% - 14px);
-  width:6px; height:6px; border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 5px rgba(192,57,43,.8);
-  animation:dotPulse 2s ease-in-out infinite;
-}
+/* ── 하단 탭 — 제거됨 ── */
+#bottom-tab { display:none; }
 
 /* ── 단서 패널 ── */
 #clue-panel {
