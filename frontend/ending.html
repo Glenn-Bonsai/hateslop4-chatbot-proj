@@ -10,33 +10,22 @@
 <body>
 <div id="app">
 
-  <!-- 치키 전체 배경 이미지 -->
-  <div class="chiki-bg">
-    <img class="chiki-bg-img" id="chiki-img"
-         src="https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778550862/%E1%84%8E%E1%85%B5%E1%84%8F%E1%85%B5_%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB_iasok9.png" alt="치키"
-         onerror="this.style.opacity='0'">
-  </div>
+  <!-- 노이즈 인트로 캔버스: 진입 시 강한 노이즈 → 점점 걷힘 -->
+  <canvas id="noise-canvas"></canvas>
 
-  <!-- 하단 콘텐츠 (말풍선 + 버튼) -->
-  <div class="chiki-content">
-
-    <!-- 말풍선 카드 -->
-    <div class="chiki-card">
-      <div class="chiki-card-text" id="bubble-text"></div>
-      <span class="cursor" id="cursor">|</span>
-    </div>
-
-    <!-- 탭 힌트 -->
-    <div class="tap-hint" id="tap-hint" style="display:none;">▼ 탭하여 계속</div>
-
-    <!-- 엔딩 후 재시작 버튼 -->
-    <div class="restart-wrap" id="restart-wrap" style="display:none;">
-      <button class="restart-btn" id="restart-btn">다시 시작하기</button>
-    </div>
-
-  </div>
-
+  <!-- 스캔라인 오버레이 -->
   <div class="noise-overlay"></div>
+
+  <!-- 엔딩 본문: 노이즈가 걷힌 후 표시 -->
+  <div class="ending-content" id="ending-content">
+    <div class="ending-scroll" id="ending-scroll"></div>
+
+    <!-- 다시 시작 버튼 -->
+    <div class="restart-wrap" id="restart-wrap" style="display:none;">
+      <button class="restart-btn" id="restart-btn">다시 시작</button>
+    </div>
+  </div>
+
 </div>
 <script src="/frontend/js/ending.js"></script>
 </body>
