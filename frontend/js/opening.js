@@ -90,6 +90,7 @@ function showPhase(id) {
 function checkInput() {
   const name = document.getElementById('playerName').value.trim();
   STATE.name = name;
+  sessionStorage.setItem('player_name', name);
   document.getElementById('startBtn').disabled = !(name.length > 0 && STATE.gender);
 }
 

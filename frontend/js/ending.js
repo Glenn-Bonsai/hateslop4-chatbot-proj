@@ -1,58 +1,54 @@
 // ═══════════════════════════════════════════════
-//  ending.js  —  루프3 사망 엔딩
-//  치키 이미지 + 말풍선 순차 타이핑
-//  탭/클릭으로 진행
+//  ending.js  —  루프3 엔딩 (노이즈 타이핑 방식)
+//
+//  시퀀스:
+//  1. 진입 시 강한 캔버스 노이즈 (레퍼런스 수준)
+//  2. 노이즈 강도 점진적으로 감소 (4초)
+//  3. 노이즈 걷히면 ending-content fade-in
+//  4. 대사 순차 타이핑 (pauseBeforeType / speed 반영)
+//  5. 타이핑 중 A+C 글리치 주기적 발동
+//  6. isLast 대사 완료 후 "다시 시작" 버튼 표시
+//  7. 버튼 클릭 → /opening
 // ═══════════════════════════════════════════════
 
 // ─────────────────────────────────────────────
-//  치키 이미지 목록
-//  실제 파일명에 맞게 수정해주세요
+//  사용자 이름 로드 (opening에서 sessionStorage에 저장한 값)
 // ─────────────────────────────────────────────
-const _V = '?v=2';
-const CHIKI_IMAGES = {
-  default:  'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778550862/%E1%84%8E%E1%85%B5%E1%84%8F%E1%85%B5_%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB_iasok9.png',
-  smile:    'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778550860/%E1%84%8E%E1%85%B5%E1%84%8F%E1%85%B5_%E1%84%8B%E1%85%AE%E1%86%BA%E1%84%8B%E1%85%B3%E1%86%B7_rn8ecs.png',
-  laugh:    'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778550858/%E1%84%8E%E1%85%B5%E1%84%8F%E1%85%B5_%E1%84%8F%E1%85%B3%E1%84%80%E1%85%A6%E1%84%8B%E1%85%AE%E1%86%BA%E1%84%8B%E1%85%B3%E1%86%B7_za0aws.png',
-  close:    'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778550865/%E1%84%8E%E1%85%B5%E1%84%8F%E1%85%B5_%E1%84%8C%E1%85%A5%E1%86%B8%E1%84%80%E1%85%B3%E1%86%AB_ku36bj.png',
-  whisper:  'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778550856/%E1%84%8E%E1%85%B5%E1%84%8F%E1%85%B5_%E1%84%80%E1%85%B1%E1%86%BA%E1%84%89%E1%85%A9%E1%86%A8%E1%84%86%E1%85%A1%E1%86%AF_swrond.png',
-};
+const USER_NAME = sessionStorage.getItem('player_name') || '000';
 
 // ─────────────────────────────────────────────
-//  대사 시퀀스
-//  image          : 이 대사 시작 시 치키 이미지 교체
-//  text           : 타이핑될 텍스트 (\n = 줄바꿈, HTML 태그 가능)
-//  speed          : ms / 글자 (숫자 클수록 느림)
-//  pauseBeforeType: 이미지 교체 후 타이핑 전 대기 ms
-//  isLast         : true 이면 탭 힌트 없이 화면 유지
+//  대사 시퀀스 (확정본)
 // ─────────────────────────────────────────────
 const SCRIPT = [
   {
-    image: 'default',
     text: '……아아.\n결국 또 여기까지 왔네 🐰',
     speed: 45,
   },
   {
-    text: '이번엔 꽤 오래 버텼다?\n치키 조금 놀랐어. 히히.',
+    text: '몇 번째인지 기억해?\n치키는 기억해. 너는… 아마 모르겠지.',
     speed: 40,
   },
   {
-    text: '범인 찾았어? 누가 널 죽였는지… 왜 죽였는지…\n다 알아냈어? ☁️',
+    text: '매번 그래.\n아침에 눈 뜨고, 또 누군가를 찾아가고,\n같은 방식으로 파고들고, 무너뜨리고.\n그러다 또 끝나.',
     speed: 38,
   },
   {
-    text: '……근데 있지.\n너 계속 착각하고 있었어.\n이 게임은 원래부터\n\'범인 찾기\' 같은 게 아니었거든 ⏳',
+    text: '치키가 루프를 만들었다고 생각해?\n치키가 없었어도 결국 이렇게 됐을 것 같은데. ☁️',
     speed: 42,
   },
   {
-    image: 'smile',
     pauseBeforeType: 400,
-    text: '너는 계속 자기가 피해자라고 믿었지. 그래야 편하니까 🙂\n\n근데 이상하지 않았어?\n왜 다들 널 그렇게 무서워했을까.\n왜 죽은 사람들 이름이… 전부 네 주변에만 있었을까 💭',
+    text: '넌 원래 그렇게 살았어.\n죄책감도, 미안함도, 반성도 없이.\n매일 똑같이. 그냥.\n\n그 수많은 하루 중에\n딱 하루 네가 죽은 날을 반복한다고 해서\n뭐가 달라질 것 같아?',
     speed: 38,
   },
   {
-    image: 'laugh',
     pauseBeforeType: 300,
-    text: '<span class="name-em">김하윤. 박주원. 나영.</span> 다 기억나? 🐰',
+    text: '그게 형벌이라고 생각해?\n\n…아니면 그냥 네 평소 하루랑\n똑같은 것 같아? ☁️',
+    speed: 40,
+  },
+  {
+    pauseBeforeType: 300,
+    text: '<span class="name-em">김하윤. 박주원. 나영.</span>\n기억이 없었으니까 몰랐겠지.\n그래도 단서는 있었잖아.\n느꼈을 텐데. 어딘가 이상하다고. 🐰',
     speed: 48,
   },
   {
@@ -64,175 +60,391 @@ const SCRIPT = [
     speed: 40,
   },
   {
-    text: '그래서 계속 반복된 거야 ⏳\n\n죽기 24시간 전.\n네가 끝까지 외면했던 순간을 다시 보게 하려고.',
-    speed: 42,
-  },
-  {
-    image: 'close',
     pauseBeforeType: 600,
     text: '이제 알겠어? 왜 아무도 널 구해주지 않았는지.\n왜 넌 매번 죽어야 했는지.\n왜 치키가 계속 웃고 있었는지 🐰',
     speed: 38,
   },
   {
-    image: 'whisper',
     pauseBeforeType: 500,
-    text: '이번엔…\n\n정말 끝낼 수 있을까?',
+    text: `또 만나, ${USER_NAME}. 🐰`,
     speed: 52,
     isLast: true,
   },
 ];
 
 // ─────────────────────────────────────────────
-//  상태
-// ─────────────────────────────────────────────
-let currentIdx   = 0;
-let isTyping     = false;
-let typeTimer    = null;
-let waitForTap   = false;
-
-// ─────────────────────────────────────────────
 //  DOM
 // ─────────────────────────────────────────────
-const chikiImg    = document.getElementById('chiki-img');
-const bubbleText  = document.getElementById('bubble-text');
-const cursorEl    = document.getElementById('cursor');
-const tapHint     = document.getElementById('tap-hint');
-const restartWrap = document.getElementById('restart-wrap');
-const restartBtn  = document.getElementById('restart-btn');
+const noiseCanvas   = document.getElementById('noise-canvas');
+const endingContent = document.getElementById('ending-content');
+const endingScroll  = document.getElementById('ending-scroll');
+const restartWrap   = document.getElementById('restart-wrap');
+const restartBtn    = document.getElementById('restart-btn');
+const ctx           = noiseCanvas.getContext('2d');
 
 // ─────────────────────────────────────────────
-//  치키 이미지 교체 (페이드 — 전체 배경 방식)
+//  캔버스 크기 맞추기
 // ─────────────────────────────────────────────
-function changeChikiImage(key) {
-  const src = CHIKI_IMAGES[key];
-  if (!src) return;
+function resizeCanvas() {
+  noiseCanvas.width  = noiseCanvas.offsetWidth  || 430;
+  noiseCanvas.height = noiseCanvas.offsetHeight || window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-  chikiImg.classList.add('fade-out');
-  setTimeout(() => {
-    chikiImg.src = src;
-    chikiImg.classList.remove('fade-out');
-    chikiImg.classList.add('fade-in');
-    setTimeout(() => chikiImg.classList.remove('fade-in'), 400);
-  }, 350);
+// ─────────────────────────────────────────────
+//  치키 이미지 미리 로드
+// ─────────────────────────────────────────────
+const CHIKI_IMG_SRC = 'https://res.cloudinary.com/dqu0dyn5k/image/upload/v1778550858/%E1%84%8E%E1%85%B5%E1%84%8F%E1%85%B5_%E1%84%8F%E1%85%B3%E1%84%80%E1%85%A6%E1%84%8B%E1%85%AE%E1%86%BA%E1%84%8B%E1%85%B3%E1%86%B7_za0aws.png';
+const chikiImgEl = new Image();
+chikiImgEl.crossOrigin = 'anonymous';
+chikiImgEl.src = CHIKI_IMG_SRC;
+
+// ─────────────────────────────────────────────
+//  노이즈 렌더러
+//  intensity: 0.0 ~ 1.0 (1.0 = 최대 노이즈)
+//  imgOpacity: 0.0 ~ 1.0 (이미지 투명도)
+// ─────────────────────────────────────────────
+function drawNoise(intensity, imgOpacity = 0) {
+  const W = noiseCanvas.width;
+  const H = noiseCanvas.height;
+
+  // 흰 배경
+  ctx.fillStyle = '#f8f8f8';
+  ctx.fillRect(0, 0, W, H);
+
+  // 치키 이미지 — 노이즈 아래에 먼저 합성
+  if (imgOpacity > 0 && chikiImgEl.complete && chikiImgEl.naturalWidth > 0) {
+    // 이미지를 캔버스 중앙에 cover 방식으로
+    const iw = chikiImgEl.naturalWidth;
+    const ih = chikiImgEl.naturalHeight;
+    const scale = Math.max(W / iw, H / ih);
+    const dw = iw * scale;
+    const dh = ih * scale;
+    const dx = (W - dw) / 2;
+    const dy = (H - dh) / 2;
+
+    ctx.save();
+    ctx.globalAlpha = imgOpacity;
+    ctx.drawImage(chikiImgEl, dx, dy, dw, dh);
+    ctx.restore();
+  }
+
+  if (intensity <= 0) return;
+
+  // 수평 노이즈 밴드 — 이미지 위에 덮어씀
+  const imgData = ctx.getImageData(0, 0, W, H);
+  const d = imgData.data;
+
+  for (let y = 0; y < H; y++) {
+    const linePow = Math.random();
+    const rowNoise = linePow < 0.10
+      ? -(Math.random() * intensity * 220)
+      : linePow < 0.25
+        ? (Math.random() - 0.5) * intensity * 160
+        : linePow < 0.50
+          ? (Math.random() - 0.5) * intensity * 70
+          : (Math.random() - 0.5) * intensity * 22;
+
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      const px = (Math.random() - 0.5) * intensity * 40;
+      // 현재 픽셀값(이미지가 합성된 상태)에 노이즈 적용
+      d[i]   = Math.max(0, Math.min(255, d[i]   + rowNoise + px));
+      d[i+1] = Math.max(0, Math.min(255, d[i+1] + rowNoise + px));
+      d[i+2] = Math.max(0, Math.min(255, d[i+2] + rowNoise + px));
+      d[i+3] = 255;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+
+  // 수평 슬라이스 글리치
+  const tmp = document.createElement('canvas');
+  tmp.width = W; tmp.height = H;
+  tmp.getContext('2d').drawImage(noiseCanvas, 0, 0);
+
+  const thinCount = Math.floor(intensity * 38);
+  for (let i = 0; i < thinCount; i++) {
+    if (Math.random() > 0.55) continue;
+    const sy = Math.floor(Math.random() * H);
+    const sh = Math.floor(2 + Math.random() * 10);
+    const dx = (Math.random() - 0.5) * intensity * 70;
+    ctx.drawImage(tmp, 0, sy, W, sh, dx, sy, W, sh);
+  }
+
+  const thickCount = Math.floor(intensity * 10);
+  for (let i = 0; i < thickCount; i++) {
+    if (Math.random() > 0.55) continue;
+    const sy = Math.floor(Math.random() * H);
+    const sh = Math.floor(20 + Math.random() * 55);
+    const dx = (Math.random() - 0.5) * intensity * 90;
+    ctx.drawImage(tmp, 0, sy, W, sh, dx, sy, W, sh);
+  }
+
+  // 빽빽한 스캔라인
+  const scanData = ctx.getImageData(0, 0, W, H);
+  const sd = scanData.data;
+  for (let y = 0; y < H; y++) {
+    const mul = (y % 2 === 0 ? 0.72 : 1.0) * (y % 4 === 0 ? 0.82 : 1.0);
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      sd[i] *= mul; sd[i+1] *= mul; sd[i+2] *= mul;
+    }
+  }
+  ctx.putImageData(scanData, 0, 0);
+
+  // 블록 노이즈
+  const blockCount = Math.floor(intensity * 30);
+  for (let i = 0; i < blockCount; i++) {
+    const bx = Math.floor(Math.random() * W);
+    const by = Math.floor(Math.random() * H);
+    const bw = Math.floor(6 + Math.random() * intensity * 40);
+    const bh = Math.floor(2 + Math.random() * 10);
+    const v  = Math.floor(Math.random() * 80);
+    ctx.fillStyle = `rgba(${v},${v},${v},${0.4 + Math.random() * 0.5})`;
+    ctx.fillRect(bx, by, bw, bh);
+  }
 }
 
 // ─────────────────────────────────────────────
-//  텍스트 한 글자씩 타이핑
-//  HTML 태그(<span> 등)는 통째로 삽입
+//  노이즈 인트로: intensity 1.0 → 0.0 (4초)
+//  이미지: 0 → 0.45 → 0 (노이즈 중반에 슬쩍 드러남)
+//  완료 후 엔딩 콘텐츠 표시 + 타이핑 시작
 // ─────────────────────────────────────────────
-function typeText(rawText, speed, onDone) {
-  // rawText의 \n을 실제 줄바꿈 마커로 두고
-  // HTML 태그와 일반 텍스트를 토큰 단위로 분리
-  const TOKEN_RE = /(<[^>]+>.*?<\/[^>]+>|<[^>]+\/>|\n|[\s\S])/g;
-  const tokens = rawText.match(TOKEN_RE) || [];
+const NOISE_DURATION = 4500;
+let noiseStart = null;
+let noiseRaf   = null;
 
-  bubbleText.innerHTML = '';
+function runNoiseIntro(timestamp) {
+  if (!noiseStart) noiseStart = timestamp;
+  const elapsed  = timestamp - noiseStart;
+  const progress = Math.min(elapsed / NOISE_DURATION, 1.0);
+
+  // 노이즈: easeOut 점감
+  const intensity = 1.0 - Math.pow(progress, 0.55);
+
+  // 이미지 투명도 곡선:
+  // 0~30%: 0 (아직 안보임)
+  // 30~60%: 0 → 0.42 (슬쩍 드러남)
+  // 60~85%: 0.42 → 0.42 (잠깐 유지)
+  // 85~100%: 0.42 → 0 (노이즈 걷히기 전 사라짐)
+  let imgOpacity = 0;
+  if (progress >= 0.30 && progress < 0.60) {
+    imgOpacity = ((progress - 0.30) / 0.30) * 0.42;
+  } else if (progress >= 0.60 && progress < 0.85) {
+    imgOpacity = 0.42;
+  } else if (progress >= 0.85) {
+    imgOpacity = 0.42 * (1.0 - (progress - 0.85) / 0.15);
+  }
+
+  drawNoise(intensity, imgOpacity);
+
+  if (progress < 1.0) {
+    noiseRaf = requestAnimationFrame(runNoiseIntro);
+  } else {
+    ctx.clearRect(0, 0, noiseCanvas.width, noiseCanvas.height);
+    noiseCanvas.style.display = 'none';
+    endingContent.classList.add('visible');
+    setTimeout(() => startTypingSequence(), 600);
+  }
+}
+
+// ─────────────────────────────────────────────
+//  타이핑 시퀀스
+// ─────────────────────────────────────────────
+const JUNK_CHARS = '░▒▓█▄▀■□╬╪═╦';
+let glitchInterval = null;
+
+function startTypingSequence() {
+  // 글리치 루프 시작 (정기적으로 모든 블록에 발동)
+  startGlitchLoop();
+  runBlock(0);
+}
+
+function runBlock(idx) {
+  if (idx >= SCRIPT.length) return;
+
+  const line = SCRIPT[idx];
+  const pause = line.pauseBeforeType || 0;
+
+  setTimeout(() => {
+    // 새 블록 생성
+    const block = document.createElement('div');
+    block.className = 'type-block';
+    block.setAttribute('data-raw', line.text); // 원본 보관
+    endingScroll.appendChild(block);
+
+    // 표시 (fade-in)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => block.classList.add('visible'));
+    });
+
+    // 타이핑
+    typeBlock(block, line.text, line.speed || 40, () => {
+      endingScroll.scrollTop = endingScroll.scrollHeight;
+
+      if (line.isLast) {
+        // 마지막 대사 → 버튼 표시
+        setTimeout(() => {
+          restartWrap.style.display = 'block';
+        }, 800);
+      } else {
+        // 다음 블록 (블록 간 호흡)
+        const gap = 700;
+        setTimeout(() => runBlock(idx + 1), gap);
+      }
+    });
+  }, pause);
+}
+
+// ─────────────────────────────────────────────
+//  타이핑 함수 (HTML 태그 보존 + \n → <br>)
+// ─────────────────────────────────────────────
+function typeBlock(el, rawText, speed, onDone) {
+  // HTML 태그와 일반 문자를 토큰으로 분리
+  const TOKEN_RE = /(<[^>]+>[\s\S]*?<\/[^>]+>|<[^>]+\/>|\n|[\s\S])/g;
+  const tokens   = rawText.match(TOKEN_RE) || [];
+
+  el.innerHTML = '';
   let i = 0;
+
+  // 커서 엘리먼트
+  const cursor = document.createElement('span');
+  cursor.className = 'type-cursor';
 
   function next() {
     if (i >= tokens.length) {
-      onDone();
+      cursor.remove();
+      el.innerHTML = rawText.replace(/\n/g, '<br>');
+      el.setAttribute('data-raw', rawText);
+      if (onDone) onDone();
       return;
     }
+
     const tok = tokens[i++];
 
     if (tok === '\n') {
-      bubbleText.appendChild(document.createElement('br'));
-      typeTimer = setTimeout(next, speed * 0.3);
+      el.appendChild(document.createElement('br'));
     } else if (tok.startsWith('<')) {
-      // HTML 태그 통째로
       const wrap = document.createElement('span');
       wrap.innerHTML = tok;
-      bubbleText.appendChild(wrap);
-      typeTimer = setTimeout(next, speed);
+      el.appendChild(wrap);
     } else {
-      bubbleText.appendChild(document.createTextNode(tok));
-      typeTimer = setTimeout(next, speed);
+      el.appendChild(document.createTextNode(tok));
     }
+
+    // 커서는 항상 마지막에
+    if (cursor.parentNode) cursor.remove();
+    el.appendChild(cursor);
+
+    endingScroll.scrollTop = endingScroll.scrollHeight;
+    setTimeout(next, speed + (Math.random() - 0.5) * (speed * 0.3));
   }
 
   next();
 }
 
 // ─────────────────────────────────────────────
-//  대사 라인 표시
+//  A+C 글리치 루프
+//  — 모든 .type-block.visible 에 주기적으로 발동
 // ─────────────────────────────────────────────
-function showLine(idx) {
-  if (idx >= SCRIPT.length) return;
+function startGlitchLoop() {
+  // 2~4초마다 랜덤 블록 1개에 글리치 버스트
+  function scheduleNext() {
+    const delay = 2000 + Math.random() * 2000;
+    glitchInterval = setTimeout(() => {
+      triggerGlitchBurst();
+      scheduleNext();
+    }, delay);
+  }
+  scheduleNext();
+}
 
-  const line = SCRIPT[idx];
-  isTyping   = true;
-  waitForTap = false;
+function triggerGlitchBurst() {
+  const blocks = Array.from(document.querySelectorAll('.type-block.visible'));
+  if (blocks.length === 0) return;
 
-  tapHint.style.display = 'none';
-  cursorEl.classList.remove('hidden');
+  const target = blocks[Math.floor(Math.random() * blocks.length)];
+  const rawText = target.getAttribute('data-raw') || '';
+  if (!rawText) return;
 
-  // 이미지 교체
-  if (line.image) changeChikiImage(line.image);
+  // C: 문자 깨짐 시퀀스 + A: CSS 글리치 동시 발동
+  const delay = (Math.random() * 0.08).toFixed(3) + 's';
+  target.style.setProperty('--g-delay', delay);
 
-  const startTyping = () => {
-    typeText(line.text, line.speed || 40, () => {
-      // 타이핑 완료
-      isTyping = false;
-      cursorEl.classList.add('hidden');
+  const seq = [
+    { ratio: 0.55, dur: 55 },
+    { ratio: 0.80, dur: 45 },
+    { ratio: 0.50, dur: 55 },
+    { ratio: 0.25, dur: 65 },
+    { ratio: 0.10, dur: 75 },
+    { ratio: 0.0,  dur: 0  },
+  ];
 
-      if (line.isLast) {
-        // 마지막 → 재시작 버튼 표시
-        setTimeout(() => {
-          restartWrap.style.display = 'block';
-        }, 800);
-        return;
-      }
+  let phase = 0;
 
-      waitForTap = true;
-      tapHint.style.display = 'flex';
-    });
-  };
+  function runPhase() {
+    if (phase >= seq.length) {
+      // 복원
+      target.classList.remove('glitch-ac');
+      target.innerHTML = rawText.replace(/\n/g, '<br>');
+      return;
+    }
 
-  const delay = line.pauseBeforeType || 0;
-  setTimeout(startTyping, delay);
+    const { ratio, dur } = seq[phase];
+
+    if (ratio > 0) {
+      // C: 글자 깨짐
+      target.innerHTML = junkifyHTML(rawText, ratio).replace(/\n/g, '<br>');
+    } else {
+      target.innerHTML = rawText.replace(/\n/g, '<br>');
+    }
+
+    // A: CSS 색수차 (첫 2 phase에만)
+    if (phase < 2) {
+      target.classList.add('glitch-ac');
+      setTimeout(() => target.classList.remove('glitch-ac'), dur);
+    }
+
+    phase++;
+    if (phase < seq.length) setTimeout(runPhase, dur);
+    else {
+      setTimeout(() => {
+        target.innerHTML = rawText.replace(/\n/g, '<br>');
+      }, 80);
+    }
+  }
+
+  runPhase();
+}
+
+// HTML 태그는 보존하고 텍스트 노드만 깨뜨리기
+function junkifyHTML(rawText, ratio) {
+  return rawText.replace(/(<[^>]+>[\s\S]*?<\/[^>]+>|<[^>]+\/>)|([^<\n]+)/g, (match, tag, text) => {
+    if (tag) return tag; // HTML 태그는 그대로
+    if (!text) return match;
+    return text.split('').map(c => {
+      if (c === ' ') return c;
+      return Math.random() < ratio
+        ? JUNK_CHARS[Math.floor(Math.random() * JUNK_CHARS.length)]
+        : c;
+    }).join('');
+  });
 }
 
 // ─────────────────────────────────────────────
-//  탭/클릭 처리
+//  다시 시작 버튼
 // ─────────────────────────────────────────────
-function handleTap() {
-  if (isTyping) {
-    // 타이핑 중 → 즉시 완성
-    clearTimeout(typeTimer);
-    isTyping = false;
-    cursorEl.classList.add('hidden');
+restartBtn.addEventListener('click', () => {
+  // 글리치 루프 정지
+  clearTimeout(glitchInterval);
 
-    const line = SCRIPT[currentIdx];
-    // HTML span 태그 유지하면서 \n → <br>
-    bubbleText.innerHTML = line.text.replace(/\n/g, '<br>');
+  // sessionStorage 초기화 (새 게임)
+  sessionStorage.removeItem('session_id');
+  sessionStorage.removeItem('loop_num');
+  sessionStorage.removeItem('last_button_id');
+  sessionStorage.removeItem('timer_start');
 
-    waitForTap = true;
-    tapHint.style.display = 'flex';
-    return;
-  }
-
-  if (waitForTap) {
-    waitForTap = false;
-    currentIdx++;
-    showLine(currentIdx);
-  }
-}
-
-// ─────────────────────────────────────────────
-//  이벤트
-// ─────────────────────────────────────────────
-document.getElementById('app').addEventListener('click', handleTap);
-document.getElementById('app').addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  handleTap();
-}, { passive: false });
-
-// ─────────────────────────────────────────────
-//  재시작 버튼
-// ─────────────────────────────────────────────
-restartBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
   window.location.href = '/opening';
 });
 
@@ -240,5 +452,6 @@ restartBtn.addEventListener('click', (e) => {
 //  시작
 // ─────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  showLine(0);
+  // 노이즈 인트로 시작
+  requestAnimationFrame(runNoiseIntro);
 });
