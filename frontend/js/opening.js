@@ -353,4 +353,26 @@ async function goGame() {
 // ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('playerName').addEventListener('input', checkInput);
+
+  // ── 제목 글리치 트리거 ──
+  const titleEl = document.querySelector('.input-title');
+  if (titleEl) {
+    // data-text에 plain text 세팅 (::before/::after content용)
+    titleEl.setAttribute('data-text', '죽기 24시간 전에');
+
+    function triggerTitleGlitch() {
+      titleEl.classList.remove('glitch-on');
+      void titleEl.offsetWidth; // reflow — 애니메이션 재시작
+      titleEl.classList.add('glitch-on');
+
+      // 애니메이션 끝나면 클래스 제거
+      setTimeout(() => titleEl.classList.remove('glitch-on'), 300);
+
+      // 다음 발동까지 랜덤 대기 (2~5초)
+      setTimeout(triggerTitleGlitch, 2000 + Math.random() * 3000);
+    }
+
+    // 1초 후 첫 발동
+    setTimeout(triggerTitleGlitch, 1000);
+  }
 });

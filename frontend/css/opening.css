@@ -103,8 +103,56 @@ body {
   font-size:26px; font-weight:800;
   color: var(--dim); text-align:center;
   line-height:1.4; margin-bottom:6px;
+  position: relative;
+  display: block;
 }
 .input-title .accent { color: var(--red2); }
+
+/* 글리치 색수차 레이어 */
+.input-title::before,
+.input-title::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%;
+  font: inherit;
+  font-weight: inherit;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.input-title::before { color: #ff2020; }
+.input-title::after  { color: var(--teal); }
+
+@keyframes titleGlitchBody {
+  0%,100% { transform: translate(0); }
+  10%     { transform: translate(-3px, 0); }
+  20%     { transform: translate(3px, 0); }
+  30%     { transform: translate(-1px, 0); }
+  40%     { transform: translate(0); }
+}
+@keyframes titleGlitchBefore {
+  0%,100% { opacity:0; transform: translate(0); }
+  10%     { opacity:1; transform: translate(-4px, 0); }
+  20%     { opacity:1; transform: translate(3px, 0); }
+  35%     { opacity:0; transform: translate(0); }
+}
+@keyframes titleGlitchAfter {
+  0%,100% { opacity:0; transform: translate(0); }
+  15%     { opacity:1; transform: translate(4px, 0); }
+  25%     { opacity:1; transform: translate(-2px, 0); }
+  35%     { opacity:0; transform: translate(0); }
+}
+
+.input-title.glitch-on {
+  animation: titleGlitchBody 0.22s steps(1) forwards;
+}
+.input-title.glitch-on::before {
+  animation: titleGlitchBefore 0.22s steps(1) forwards;
+}
+.input-title.glitch-on::after {
+  animation: titleGlitchAfter 0.22s steps(1) forwards;
+}
 .input-subtitle {
   font-size:11px; color: var(--muted); text-align:center;
   letter-spacing:1.5px; margin-bottom:40px;

@@ -231,11 +231,11 @@ function runNoiseIntro(timestamp) {
   // 85~100%: 0.42 → 0 (노이즈 걷히기 전 사라짐)
   let imgOpacity = 0;
   if (progress >= 0.30 && progress < 0.60) {
-    imgOpacity = ((progress - 0.30) / 0.30) * 0.42;
+    imgOpacity = ((progress - 0.30) / 0.30) * 0.15;
   } else if (progress >= 0.60 && progress < 0.85) {
-    imgOpacity = 0.42;
+    imgOpacity = 0.15;
   } else if (progress >= 0.85) {
-    imgOpacity = 0.42 * (1.0 - (progress - 0.85) / 0.15);
+    imgOpacity = 0.15 * (1.0 - (progress - 0.85) / 0.15);
   }
 
   drawNoise(intensity, imgOpacity);
