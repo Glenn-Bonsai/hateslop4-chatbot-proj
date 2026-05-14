@@ -136,7 +136,7 @@ function goTimer() {
 }
 
 function runTimer() {
-  let secs   = 24 * 60;
+  let secs   = 17 * 60;
   const clockEl = document.getElementById('opClock');
 
   const tick = setInterval(() => {
