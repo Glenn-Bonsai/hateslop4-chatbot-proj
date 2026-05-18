@@ -63,6 +63,7 @@ let timerInterval = null;
 let chikiToastTimeout = null;
 let currentTab = 'chat';
 let clues = [];
+let unreadClueCount = 0;
 let triggersLoaded = false;
 let isSending = false;
 let isSwitchingNPC = false;
@@ -236,7 +237,11 @@ function switchTab(tab) {
     choicesArea.style.display = 'none';
     cluePanel.classList.add('active');
     folderBtn.classList.add('active');
-    folderBadge.style.display = 'none';
+    // 현재 단서 전체를 읽음 처리
+    unreadClueCount = 0;
+    updateClueBadge();
+    const allIds = JSON.parse(sessionStorage.getItem('clues') || '[]').map(c => c.id);
+    sessionStorage.setItem('clues_read', JSON.stringify(allIds));
     msgInput.disabled = true;
     sendBtn.disabled = true;
     renderClues();
@@ -260,8 +265,8 @@ function addClue(clue) {
   const infoCount = document.getElementById('clue-info-count');
   if (infoCount) infoCount.textContent = getClues().length;
   if (currentTab !== 'clue') {
-    const badge = document.getElementById('folder-badge');
-    if (badge) badge.style.display = '';
+    unreadClueCount++;
+    updateClueBadge();
   }
   if (currentTab === 'clue') renderClues();
 }
@@ -286,12 +291,14 @@ function renderClues() {
       <div class="clue-item-top">
         <span class="clue-item-badge">단서 #${String(i + 1).padStart(2, '0')}</span>
       </div>
-      <div class="clue-item-main">
-        ${c.img ? `<img src="${esc(c.img)}" class="clue-item-img" alt="" style="max-width:100%;border-radius:6px;margin-bottom:6px;">` : ''}
-        <div class="clue-item-text">
-          <div class="clue-item-title">${esc(c.title)}</div>
-          <div class="clue-item-desc">${esc(c.desc)}</div>
-        </div>
+      ${c.img ? `
+      <div class="clue-item-img-wrap" onclick="openImgLightbox('${esc(c.img)}', '${esc(c.title)}')">
+        <img src="${esc(c.img)}" class="clue-item-img" alt="">
+        <div class="clue-item-img-hint">🔍 탭하여 확대</div>
+      </div>` : ''}
+      <div class="clue-item-text">
+        <div class="clue-item-title">${esc(c.title)}</div>
+        <div class="clue-item-desc">${esc(c.desc)}</div>
       </div>
     </div>`).join('');
 }
@@ -822,6 +829,82 @@ document.getElementById('sound-toggle').addEventListener('click', (e) => {
 });
 
 // ─────────────────────────────────────────────
+//  미확인 단서 배지 업데이트
+// ─────────────────────────────────────────────
+function updateClueBadge() {
+  const badge = document.getElementById('folder-badge');
+  if (!badge) return;
+  if (unreadClueCount > 0) {
+    badge.textContent = unreadClueCount > 9 ? '9+' : String(unreadClueCount);
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ─────────────────────────────────────────────
+//  단서 이미지 라이트박스
+// ─────────────────────────────────────────────
+let _lbScale = 1, _lbDist0 = 0, _lbX = 0, _lbY = 0, _lbDx = 0, _lbDy = 0, _lbDragging = false;
+
+function openImgLightbox(src, title) {
+  let lb = document.getElementById('img-lightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'img-lightbox';
+    lb.innerHTML = `
+      <div id="lb-backdrop"></div>
+      <div id="lb-container">
+        <div id="lb-label"></div>
+        <div id="lb-img-wrap"><img id="lb-img" src="" alt="" draggable="false"></div>
+        <div id="lb-hint">핀치로 줌 · 드래그로 이동 · 더블탭으로 리셋</div>
+      </div>`;
+    document.getElementById('app').appendChild(lb);
+    document.getElementById('lb-backdrop').addEventListener('click', closeImgLightbox);
+
+    const img = document.getElementById('lb-img');
+    let lastTap = 0;
+    img.addEventListener('touchend', () => {
+      const now = Date.now();
+      if (now - lastTap < 280) { _lbScale = 1; _lbDx = 0; _lbDy = 0; applyLbTransform(); }
+      lastTap = now;
+    });
+    img.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        _lbDist0 = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      } else if (e.touches.length === 1 && _lbScale > 1) {
+        _lbDragging = true; _lbX = e.touches[0].clientX - _lbDx; _lbY = e.touches[0].clientY - _lbDy;
+      }
+    }, { passive: true });
+    img.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        _lbScale = Math.min(5, Math.max(1, _lbScale * (d / _lbDist0))); _lbDist0 = d; applyLbTransform();
+      } else if (e.touches.length === 1 && _lbDragging) {
+        _lbDx = e.touches[0].clientX - _lbX; _lbDy = e.touches[0].clientY - _lbY; applyLbTransform();
+      }
+    }, { passive: false });
+    img.addEventListener('touchend', () => { _lbDragging = false; });
+  }
+  _lbScale = 1; _lbDx = 0; _lbDy = 0;
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-label').textContent = title || '';
+  applyLbTransform();
+  lb.classList.add('open');
+}
+
+function closeImgLightbox() {
+  const lb = document.getElementById('img-lightbox');
+  if (lb) lb.classList.remove('open');
+}
+
+function applyLbTransform() {
+  const img = document.getElementById('lb-img');
+  if (img) img.style.transform = `translate(${_lbDx}px, ${_lbDy}px) scale(${_lbScale})`;
+}
+
+// ─────────────────────────────────────────────
 //  초기화
 // ─────────────────────────────────────────────
 (async () => {
@@ -835,29 +918,28 @@ document.getElementById('sound-toggle').addEventListener('click', (e) => {
   if (loopNumEl) loopNumEl.textContent = loopNum;
   if (loopCountEl) loopCountEl.textContent = loopNum;
 
+  // ★ 버튼룸에서 획득한 단서 포함 — 미확인 단서 카운트 초기화
+  // clues_read 에 없는 id는 아직 단서탭에서 확인 안 한 것
+  const existingClues = JSON.parse(sessionStorage.getItem('clues') || '[]');
+  const readClues     = JSON.parse(sessionStorage.getItem('clues_read') || '[]');
+  unreadClueCount = existingClues.filter(c => !readClues.includes(c.id)).length;
+  updateClueBadge();
+
   await loadTriggers();
   switchNPC(0);
   updateHpBar();
   scrollToBottom();
 
-  // 입력창 키워드 기반 추천 문구 필터링
   const msgInput = document.getElementById('msg-input');
-  msgInput.addEventListener('input', (e) => {
-    filterChoicesByInput(e.target.value);
-  });
-  // Enter 키 전송
-  msgInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendMsg();
-  });
+  msgInput.addEventListener('input', (e) => { filterChoicesByInput(e.target.value); });
+  msgInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMsg(); });
 
-  // 페이지 로드 시 백그라운드에서 오디오 재생 시도
   bgmAudio.play().then(() => {
-      console.log('BGM 자동 재생 성공');
-      updateSoundIcon(true);
-      hasInteracted = true; 
-  }).catch((e) => {
-      // 브라우저가 막으면 꺼진 상태로 대기 (사용자 첫 클릭 시 켜짐)
-      console.warn('브라우저 정책으로 자동 재생 차단. 사용자 클릭 대기 중.');
-      updateSoundIcon(false);
+    console.log('BGM 자동 재생 성공');
+    updateSoundIcon(true);
+    hasInteracted = true;
+  }).catch(() => {
+    console.warn('브라우저 정책으로 자동 재생 차단. 사용자 클릭 대기 중.');
+    updateSoundIcon(false);
   });
 })();
