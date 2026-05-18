@@ -386,11 +386,16 @@ html, body {
   color:var(--accent);
 }
 .folder-badge {
-  position:absolute; top:5px; right:5px;
-  width:6px; height:6px; border-radius:50%;
+  position:absolute; top:-5px; right:-5px;
+  min-width:16px; height:16px; border-radius:8px;
+  padding:0 4px;
   background:var(--accent);
-  box-shadow:0 0 4px rgba(192,57,43,.8);
+  border:2px solid var(--bg-base);
+  box-shadow:0 0 8px rgba(192,57,43,.9);
   animation:dotPulse 2s ease-in-out infinite;
+  font-size:9px; font-weight:700; font-family:var(--font-mono);
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  line-height:1; pointer-events:none;
 }
 #msg-input {
   flex:1; background:var(--bg-surface2);
@@ -495,6 +500,76 @@ html, body {
   display:flex; align-items:center; gap:4px;
 }
 .clue-item-from::before { content:'🐰'; font-size:10px; }
+
+/* ── 단서 이미지 래퍼 ── */
+.clue-item-img-wrap {
+  position:relative; cursor:pointer; border-radius:6px; overflow:hidden;
+  background:#000;
+}
+.clue-item-img {
+  width:100%; display:block; border-radius:6px;
+  object-fit:contain; max-height:260px;
+  transition:opacity 0.2s;
+}
+.clue-item-img-wrap:active .clue-item-img { opacity:0.75; }
+.clue-item-img-hint {
+  position:absolute; bottom:0; left:0; right:0;
+  background:linear-gradient(transparent, rgba(0,0,0,0.72));
+  color:rgba(255,255,255,0.55); font-size:10px;
+  font-family:var(--font-mono); letter-spacing:0.5px;
+  padding:14px 10px 7px; text-align:center; pointer-events:none;
+}
+
+/* ── 라이트박스 ── */
+#img-lightbox {
+  display:none; position:fixed; inset:0; z-index:200;
+}
+#img-lightbox.open { display:block; }
+
+#lb-backdrop {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0.93);
+  animation:lbFadeIn 0.22s ease;
+}
+@keyframes lbFadeIn { from{opacity:0} to{opacity:1} }
+
+#lb-container {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:10px; padding:48px 12px 32px;
+  pointer-events:none;
+}
+
+#lb-label {
+  font-family:var(--font-mono); font-size:11px;
+  color:rgba(212,32,24,0.85); letter-spacing:1.5px;
+  text-transform:uppercase; pointer-events:none;
+}
+
+#lb-img-wrap {
+  width:100%; flex:1;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; pointer-events:all;
+}
+
+#lb-img {
+  max-width:100%; max-height:100%;
+  object-fit:contain; border-radius:4px;
+  transform-origin:center center;
+  user-select:none; -webkit-user-drag:none;
+  animation:lbPopIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes lbPopIn {
+  from { opacity:0; transform:scale(0.88); }
+  to   { opacity:1; transform:scale(1); }
+}
+
+#lb-hint {
+  font-family:var(--font-mono); font-size:10px;
+  color:rgba(255,255,255,0.25); letter-spacing:0.5px;
+  pointer-events:none;
+}
 
 /* ── 치키 토스트 ── */
 #chiki-toast {
