@@ -412,7 +412,7 @@ function applyScene(nodeId, prefix = 'select_') {
     if (scene.popup_img) {
       getClueImgMap().then(imgMap => {
         const url = imgMap[scene.popup_img] ?? null;
-        if (url) showPopup({ type: 'image', imgUrl: url, duration: 3000 });
+        showImgPopup(url, null, scene.popup_link ?? null);
       });
     }
   };
@@ -524,10 +524,10 @@ function playScenes(scenes, nodeId, onDone) {
     };
 
     if (scene.popup_img) {
-      // popup_img: 대사 표시 후 5초 뒤 오버레이 팝업, 닫기 버튼 → 다음 단계 진행
+      // popup_img: 대사 표시 후 3초 뒤 오버레이 팝업, 닫기 버튼 → 다음 단계 진행
       getClueImgMap().then(imgMap => {
         const url = imgMap[scene.popup_img] || null;
-        setTimeout(() => showImgPopup(url, proceed), 3000);
+        setTimeout(() => showImgPopup(url, proceed, scene.popup_link ?? null), 3000);
       });
     } else {
       proceed();
@@ -562,7 +562,7 @@ function playEventSound(eventText) {
   }
 }
 
-function showImgPopup(url, onClose) {
+function showImgPopup(url, onClose, link = null) {
   const overlay  = document.getElementById('imgPopupOverlay');
   const imgEl    = document.getElementById('imgPopupImg');
   const phEl     = document.getElementById('imgPopupPlaceholder');
@@ -572,6 +572,13 @@ function showImgPopup(url, onClose) {
     imgEl.src = url;
     imgEl.style.display = 'block';
     phEl.style.display = 'none';
+    if (link) {
+      imgEl.style.cursor = 'pointer';
+      imgEl.onclick = () => window.open(link, '_blank');
+    } else {
+      imgEl.style.cursor = '';
+      imgEl.onclick = null;
+    }
   } else {
     imgEl.src = '';
     imgEl.style.display = 'none';
